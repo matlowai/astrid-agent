@@ -507,7 +507,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         kernel_ctx = None
         if parsed.project:
             reject_project_with_out(parsed.project, parsed.out)
-            from astrid.sdk.client import AstridClient
+            from astrid.sdk import AstridClient
 
             with AstridClient.open_from_launcher() as client:
                 kernel_ctx = admit_orchestrator_project_run(

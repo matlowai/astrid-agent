@@ -40,7 +40,7 @@ def _prepare_project_main(argv: list[str]) -> tuple[Any | None, list[str]]:
     if not parsed.project:
         return None, argv
     reject_project_with_out(parsed.project, parsed.out)
-    from astrid.sdk.client import AstridClient
+    from astrid.sdk import AstridClient
 
     with AstridClient.open_from_launcher() as client:
         context = admit_orchestrator_project_run(
