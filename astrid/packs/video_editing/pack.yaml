@@ -2,7 +2,11 @@ schema_version: 3
 id: video_editing
 name: Astrid Video Editing
 version: 1.0.0
+pack_api: "2.2"
 dependencies:
+  python_requirements:
+    - "Pillow"
+    - "PyYAML>=6.0"
   packs:
     - editorial
     - iteration

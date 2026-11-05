@@ -2,7 +2,16 @@ schema_version: 3
 id: editorial
 name: Astrid Editorial
 version: 1.0.0
+pack_api: "2.2"
 dependencies:
+  python_requirements:
+    - "jsonschema>=4.0"
+    - "openai>=1.55,<3"
+    - "referencing>=0.30"
+    - "Pillow"
+    - "scenedetect==0.6.4"
+    - "opencv-python-headless>=4.9.0.80,<4.10"
+    - "PyYAML>=6.0"
   packs: []
 status: active
 domain: editorial

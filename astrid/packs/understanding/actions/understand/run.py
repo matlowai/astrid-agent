@@ -52,8 +52,15 @@ def main(argv: list[str] | None = None) -> int:
     target = ALIASES[args.mode]
     if callable(target):
         return target(forwarded)
-    module_name, function_name = target.split(":", 1)
-    return getattr(import_module(module_name), function_name)(forwarded)
+    if target == "astrid.packs.understanding.actions.audio_understand.run:main":
+        module = import_module("astrid.packs.understanding.actions.audio_understand.run")
+    elif target == "astrid.packs.understanding.actions.video_understand.run:main":
+        module = import_module("astrid.packs.understanding.actions.video_understand.run")
+    elif target == "astrid.packs.understanding.actions.visual_understand.run:main":
+        module = import_module("astrid.packs.understanding.actions.visual_understand.run")
+    else:
+        raise ValueError(f"Unsupported understanding executor: {target}")
+    return module.main(forwarded)
 
 
 if __name__ == "__main__":

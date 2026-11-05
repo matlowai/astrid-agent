@@ -34,7 +34,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from astrid.sdk import timeline_intent as intent
+from astrid.sdk import timeline_intent_words
 
 SCHEMA = "editorial.pacing/v1"
 CUT_TRACK = "plate"
@@ -164,7 +164,7 @@ def _speech(
     sources: list[str] = []
     app_hit = False
     for clip_start, _clip_end, clip in voice:
-        for item in intent.words(clip):
+        for item in timeline_intent_words(clip):
             pair = _word_pair(item)
             if pair is not None:
                 timed.append((clip_start + pair[0], clip_start + pair[1], "app.words"))
@@ -620,8 +620,7 @@ def make_visualizer_layer():
 
     from PIL import ImageDraw
 
-    from astrid.packs.rendering.actions.timeline_visualize.layers import Layer, LayerResult
-    from astrid.packs.rendering.api import PALETTE, draw_text
+    from astrid.packs.rendering.api import Layer, LayerResult, PALETTE, draw_text
 
     neighbours = 6
 

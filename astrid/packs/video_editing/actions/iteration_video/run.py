@@ -21,7 +21,7 @@ from typing import Any, Mapping, Sequence
 
 from runtime_protocol.dirfd import filesystem as os
 
-from astrid import invoke
+from astrid.sdk import invoke
 from astrid.pack_api import build_manifest, write_manifest
 from astrid.packs.video_editing.shared.iteration_inputs import (
     MAX_DOCUMENT_BYTES,

@@ -15,7 +15,7 @@ from typing import Any
 
 from astrid.pack_api import AuditContext
 from astrid.pack_api import AstridError
-from astrid.core.foundation.paths import PACKAGE_ROOT
+from astrid.pack_api import astrid_root
 from astrid.pack_api import METADATA_VERSION, AssetRegistry, PipelineMetadata, TimelineConfig, canonical_timeline_config, materialize_output
 from astrid.pack_api import utc_now_seconds
 from astrid.pack_api import compile_arrangement_plan
@@ -439,7 +439,7 @@ def build_metadata_from_arrangement(
         "generated_at": utc_now_seconds(),
         "pipeline": {
             "steps_run": steps_run,
-            "tool_versions": _tool_fingerprints(PACKAGE_ROOT),
+            "tool_versions": _tool_fingerprints(astrid_root()),
             "config_snapshot": {
                 "primary_asset": primary_asset,
                 "renderer": args.renderer,

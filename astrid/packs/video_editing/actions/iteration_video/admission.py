@@ -13,10 +13,10 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
-import astrid
+import astrid.sdk as astrid
 from astrid.packs.video_editing.shared.iteration_inputs import freeze_inputs, serialize_frozen_inputs
 from astrid.sdk import validate_child_policy
-from astrid.sdk.capability_selection import select_capability_row
+from astrid.sdk import select_capability_row
 from astrid.sdk import CapabilityValidationError
 
 ROOT = "video_editing.iteration_video"

@@ -297,7 +297,7 @@ def write_transcripts(out_dir: Path, segments: list[dict[str, Any]], audit: Audi
 
 def whisper_transcript_content(media_id: str, segments: list[dict[str, Any]]) -> dict[str, Any]:
     """Preserve Whisper's source-time segments; use stable ordinal IDs."""
-    from astrid.sdk.media_transcript import SCHEMA, WHISPER_SOURCE
+    from astrid.sdk import MEDIA_TRANSCRIPT_SCHEMA as SCHEMA, WHISPER_SOURCE
 
     converted = []
     for index, segment in enumerate(segments):
@@ -322,7 +322,7 @@ def _register_runtime_transcript(audio_path: Path, json_path: Path, project: str
         return
     try:
         from astrid.sdk import AstridClient
-        from astrid.sdk.media_transcript import WHISPER_SOURCE, write_transcript
+        from astrid.sdk import WHISPER_SOURCE, write_transcript
 
         media_id = f"sha256:{sha256_file(audio_path)}"
         segments = json.loads(json_path.read_text(encoding="utf-8"))["segments"]

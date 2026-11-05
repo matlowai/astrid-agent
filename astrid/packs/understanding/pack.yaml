@@ -2,6 +2,11 @@ schema_version: 3
 id: understanding
 name: Astrid Understanding
 version: 1.0.0
+pack_api: "2.2"
+dependencies:
+  python_requirements:
+    - "jsonschema>=4.0"
+    - "Pillow"
 status: active
 domain: media
 stability: stable
