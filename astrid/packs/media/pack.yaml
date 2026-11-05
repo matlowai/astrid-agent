@@ -1,4 +1,5 @@
 schema_version: 3
+pack_api: "2.0"
 id: media
 name: Media
 version: 0.1.0

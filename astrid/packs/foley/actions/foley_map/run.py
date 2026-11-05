@@ -19,7 +19,7 @@ from datetime import datetime, timezone  # noqa: E402
 from pathlib import Path
 from typing import Any
 
-from astrid import sdk  # noqa: E402
+import astrid.sdk as sdk  # noqa: E402
 from astrid.pack_api import build_manifest, write_manifest  # noqa: E402
 from astrid.pack_api import add_choice_arg
 from astrid.pack_api import AstridError

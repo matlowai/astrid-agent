@@ -1,4 +1,7 @@
 schema_version: 3
+pack_api: "2.0"
+dependencies:
+  packs: [fal, understanding]
 id: foley
 name: Astrid Foley
 version: 1.0.0
