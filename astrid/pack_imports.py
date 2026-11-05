@@ -12,6 +12,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Mapping
 
+# Distribution names differ from their top-level import packages.  These
+# mappings describe ownership, not permission: the distribution must still be
+# declared in the pack manifest.  Keep defaults deterministic across hosts.
+_PYTHON_DISTRIBUTIONS = {"PIL": "Pillow", "yaml": "PyYAML"}
+
 
 @dataclass(frozen=True)
 class ImportViolation:
@@ -93,11 +98,12 @@ def _classify(module: str, *, level: int, pack_id: str, contract: ImportContract
         return "deep_import", "Import only a declared pack's public api module."
     if module == "astrid" or module.startswith("astrid."):
         return "deep_import", "Import public core names from astrid.pack_api."
-    mapped = contract.python_modules.get(root)
+    mapped = contract.python_modules.get(root, _PYTHON_DISTRIBUTIONS.get(root))
     if mapped:
         normalized = mapped.lower().replace("_", "-").replace(".", "-")
         if normalized in declared_python:
             return None
+        return "undeclared_python", "Declare this Python package in dependencies.python_requirements."
     normalized_root = root.lower().replace("_", "-").replace(".", "-")
     if normalized_root in declared_python:
         return None

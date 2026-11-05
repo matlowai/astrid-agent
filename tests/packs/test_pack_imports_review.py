@@ -18,6 +18,31 @@ def _manifest() -> dict[str, object]:
     }
 
 
+def test_default_distribution_mapping_requires_real_declared_packages(tmp_path):
+    pack = _pack(tmp_path)
+    (pack / "entry.py").write_text(
+        "import PIL.Image\nfrom yaml import safe_load\nimport astrid.core.secret\n",
+        encoding="utf-8",
+    )
+    manifest = _manifest()
+    manifest["dependencies"] = {"packs": [], "python_requirements": ["Pillow>=9", "PyYAML>=6"]}
+    found = check_pack_imports(pack, contract=ImportContract(), manifest=manifest)
+    assert [(item.module, item.code) for item in found] == [("astrid.core.secret", "deep_import")]
+
+    manifest["dependencies"] = {"packs": [], "python_requirements": []}
+    found = check_pack_imports(pack, contract=ImportContract(), manifest=manifest)
+    assert [(item.module, item.code) for item in found] == [
+        ("PIL.Image", "undeclared_python"), ("yaml", "undeclared_python"),
+        ("astrid.core.secret", "deep_import"),
+    ]
+
+    # Import names are not substitute distributions, even if similarly named
+    # distributions happen to exist on an ambient machine.
+    manifest["dependencies"] = {"packs": [], "python_requirements": ["PIL", "yaml"]}
+    found = check_pack_imports(pack, contract=ImportContract(), manifest=manifest)
+    assert [item.code for item in found] == ["undeclared_python", "undeclared_python", "deep_import"]
+
+
 def test_relative_imports_resolve_from_each_source_file_and_allow_own_pack_private_modules(tmp_path):
     pack = _pack(tmp_path)
     (pack / "entry.py").write_text("from .helpers import make\n", encoding="utf-8")
@@ -148,6 +173,7 @@ def test_production_caller_supplies_personal_pins_markers(tmp_path, monkeypatch)
     import yaml
     from packaging.markers import default_environment
 
+    from astrid.pack_api import VERSION
     from astrid.core.pack import loader
 
     bundled = tmp_path / "bundled"
@@ -155,7 +181,7 @@ def test_production_caller_supplies_personal_pins_markers(tmp_path, monkeypatch)
     root = tmp_path / "external" / "demo"
     root.mkdir(parents=True)
     (root / "pack.yaml").write_text(yaml.safe_dump({
-        "schema_version": 3, "id": "demo", "name": "demo", "version": "1.0.0", "pack_api": "1.0",
+        "schema_version": 3, "id": "demo", "name": "demo", "version": "1.0.0", "pack_api": f"{VERSION[0]}.{VERSION[1]}",
         "documentation": {"kind": "none", "reason": "PK-7 fixture."},
         "dependencies": {"packs": [], "python_requirements": [f"pytest; python_version >= '{sys.version_info[0]}.0'"]},
     }), encoding="utf-8")
