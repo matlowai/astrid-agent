@@ -1,6 +1,8 @@
 {
   "schema_version": 3,
+  "pack_api": "2.0",
   "id": "astrid_motion",
+  "dependencies": {"python_requirements": ["Pillow"]},
   "name": "Astrid Motion Pack",
   "version": "0.1.0",
   "status": "experimental",
