@@ -748,6 +748,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     run_dir = args.run_dir.resolve()
     out_dir = args.out.resolve()
     hype_mp4 = brief_dir / "hype.mp4"
+    if not hype_mp4.is_file():
+        raise FileNotFoundError(f"editor_review: rendered video not found: {hype_mp4}")
     arrangement = load_arrangement(brief_dir / "arrangement.json", assign_missing_uuids=True)
     refine_report = _read_json(brief_dir / "refine.json")
     quality_zones_path = run_dir / "quality_zones.json"

@@ -260,7 +260,6 @@ actions:
       - training.pool_build
       - training.pool_merge
       - editorial.arrange
-      - video_editing.cut
       - editorial.refine
       - rendering.render
       provides:
@@ -785,7 +784,6 @@ actions:
       - training.pool_build
       - training.pool_merge
       - editorial.arrange
-      - video_editing.cut
       provides:
       - refine
       - timeline
@@ -1438,7 +1436,6 @@ actions:
       - training.pool_build
       - training.pool_merge
       - editorial.arrange
-      - video_editing.cut
       - editorial.refine
       - rendering.render
       - editorial.editor_review
