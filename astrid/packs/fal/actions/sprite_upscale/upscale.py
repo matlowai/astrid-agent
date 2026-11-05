@@ -11,9 +11,7 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from astrid.core.contracts.errors import AstridError
-from astrid.core.contracts.die import pack_die as _die
-from astrid.core.util.credentials_scope import CredentialsScope
+from astrid.pack_api import AstridError, CredentialsScope, pack_die as _die
 
 DEFAULT_FAL_UPSCALER = "fal-ai/clarity-upscaler"
 FAL_KEY_NAMES = ("FAL_KEY", "FAL_API_KEY")

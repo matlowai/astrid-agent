@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from typing import Any, Iterable
 
-from astrid.core.foundation.paths import WORKSPACE_ROOT
+from astrid.pack_api import checkout_root
 
 
 class PublishError(RuntimeError):
@@ -22,7 +22,7 @@ def _load_shared_youtube_publisher():
         if exc.name != "banodoco_social":
             raise
 
-    shared_repo = WORKSPACE_ROOT / "banodoco-workspace" / "banodoco-social"
+    shared_repo = checkout_root().parent / "banodoco-workspace" / "banodoco-social"
     if shared_repo.exists():
         shared_repo_str = str(shared_repo)
         if shared_repo_str not in sys.path:

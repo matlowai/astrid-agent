@@ -1,4 +1,5 @@
 schema_version: 3
+pack_api: "2.0"
 id: youtube
 name: Astrid YouTube
 version: 1.0.0

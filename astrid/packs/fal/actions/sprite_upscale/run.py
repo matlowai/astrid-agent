@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
-from astrid.core.pack.entrypoint import guard_canonical_entrypoint, run_pack_main
+from astrid.pack_api import guard_canonical_entrypoint, run_pack_main
 
 guard_canonical_entrypoint("fal.sprite_upscale")
 

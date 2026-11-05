@@ -1,4 +1,5 @@
 schema_version: 3
+pack_api: "2.0"
 id: discord_local
 name: Personal Discord Browser Adapter
 version: 0.1.0

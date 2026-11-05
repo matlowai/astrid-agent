@@ -1,4 +1,8 @@
 schema_version: 3
+pack_api: "2.0"
+dependencies:
+  python_requirements:
+    - fal-client>=0.7.0
 id: fal
 name: Astrid fal
 version: 1.0.0
