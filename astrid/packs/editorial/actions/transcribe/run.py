@@ -184,13 +184,21 @@ def require_hf_token(diarize_mode: str | None) -> str | None:
         pass
     raise SystemExit("HF_TOKEN is required when using --diarize pyannote")
 def diarize_audio(audio_path: Path, cache_dir: Path, diarize_mode: str | None) -> dict[str, Any] | None:
-    token = require_hf_token(diarize_mode)
-    if diarize_mode != "pyannote" or token is None:
+    if diarize_mode != "pyannote":
         return None
+    try:
+        from pyannote.audio import Pipeline
+    except ModuleNotFoundError as exc:
+        if exc.name not in {"pyannote", "pyannote.audio"}:
+            raise
+        raise SystemExit(
+            "--diarize pyannote requires the optional pyannote.audio dependency "
+            "in the selected Python environment"
+        ) from exc
+    token = require_hf_token(diarize_mode)
     mono_path = cache_dir / "diarize_mono.wav"
     if not mono_path.is_file():
         run(["ffmpeg", "-y", "-i", str(audio_path), "-vn", "-ac", "1", str(mono_path)])
-    from pyannote.audio import Pipeline
     pipeline = Pipeline.from_pretrained(PYANNOTE_PIPELINE, use_auth_token=token)
     turns = [{"start": round(float(turn.start), 6), "end": round(float(turn.end), 6), "speaker": str(speaker)} for turn, _, speaker in pipeline(str(mono_path)).itertracks(yield_label=True) if float(turn.end) > float(turn.start)]
     return {"mono_path": mono_path, "speaker_turns": turns}
