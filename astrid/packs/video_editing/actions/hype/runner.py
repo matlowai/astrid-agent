@@ -121,11 +121,15 @@ def prepare_brief_artifacts(args: argparse.Namespace) -> None:
         _clear_per_brief_sentinels(args.brief_out)
     args.brief_copy.write_bytes(body_bytes)
 
-from astrid.core.execution.pipeline_step import (
+from astrid.pack_api import (
     step_output_root, log_dir_for_step, sentinel_paths, print_log_tail,
-    _signal_process_group, _process_group_exists, _terminate_process_group,
-    _callback_cancelled, run_step, _asset_kind_for_sentinel,
-    _register_step_outputs, _redact_command,
+    signal_pipeline_process_group as _signal_process_group,
+    pipeline_process_group_exists as _process_group_exists,
+    terminate_pipeline_process_group as _terminate_process_group,
+    pipeline_callback_cancelled as _callback_cancelled, run_step,
+    asset_kind_for_sentinel as _asset_kind_for_sentinel,
+    register_step_outputs as _register_step_outputs,
+    redact_pipeline_command as _redact_command,
 )
 
 def should_rerun(step: Step, args: argparse.Namespace, forced: bool) -> bool:
