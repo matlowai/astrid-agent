@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import argparse
 import io
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from astrid.core.execution import pipeline_step as runner
 from astrid.packs.video_editing.actions.hype.steps import Step
@@ -12,6 +14,19 @@ from astrid.packs.video_editing.actions.hype.steps import Step
 
 def _callback(args):
     return args.out
+
+
+def test_hype_resources_and_shared_callback_worker(tmp_path):
+    pack_root = Path(__file__).resolve().parents[3] / "astrid/packs/video_editing"
+    manifest = yaml.safe_load((pack_root / "pack.yaml").read_text())
+    hype = manifest["actions"]["hype"]
+    for resource in hype["resources"]:
+        assert (pack_root / resource["path"]).is_file()
+
+    step = Step("fixture", (), lambda _: [], invoke=print)
+    args = argparse.Namespace(out=tmp_path, verbose=False)
+    assert runner.run_step(step, [], args) == 0
+    assert "Namespace(" in (tmp_path / "logs/fixture.log").read_text()
 
 
 @pytest.mark.parametrize("inherited", [True, False])

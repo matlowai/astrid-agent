@@ -994,8 +994,6 @@ actions:
     - kind: implementation
       path: actions/hype/runner.py
     - kind: implementation
-      path: actions/hype/step_worker.py
-    - kind: implementation
       path: actions/hype/steps.py
     - kind: support
       path: shared/result_receipts.py
