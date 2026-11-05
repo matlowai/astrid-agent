@@ -15,7 +15,7 @@
 | `editorial.arrange` | Compose a brief-specific shot arrangement from runtime-materialized inputs. |
 | `editorial.boundary_candidates` | Package candidate video frames for visual scene-boundary review. |
 | `editorial.editor_review` | Run heuristic editorial reviewers over an arrangement and emit notes. |
-| `editorial.human_notes` | Convert human editorial notes into structured pipeline inputs. |
+| `video_editing.human_notes` | Convert human editorial notes into structured pipeline inputs. |
 | `editorial.human_review` | Serve a small HTML page locally, collect human decisions as JSON, block until submit. |
 | `editorial.inspect_cut` | Inspect a generated cut run directory and report timeline/asset health. |
 | `editorial.pacing` | Render an immutable timeline rhythm sheet for editorial review. |

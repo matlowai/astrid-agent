@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from astrid.pack_api import guard_canonical_entrypoint
 
-guard_canonical_entrypoint('editorial.human_notes')
+guard_canonical_entrypoint('video_editing.human_notes')
 
 import argparse
 import json
@@ -20,13 +20,9 @@ from astrid.pack_api import executor_argv
 from astrid.pack_api import require_runtime_materialized_file
 from astrid.pack_api import load_arrangement, load_pool
 from astrid.pack_api import ClaudeClient, build_claude_client
-from astrid.packs.editorial.actions.arrange.run import pool_digest
-from astrid.packs.editorial.actions.editor_review.run import (
-    DEFAULT_MODEL,
-    RESPONSE_SCHEMA,
-    _validate_editor_notes,
-    _validate_review_payload_shape,
-    arrangement_summary,
+from astrid.packs.editorial.api import (
+    DEFAULT_MODEL, RESPONSE_SCHEMA, pool_digest, arrangement_summary,
+    validate_editor_notes, validate_review_payload_shape,
 )
 
 
@@ -279,8 +275,8 @@ def main(argv: Sequence[str] | None = None, *, client: ClaudeClient | None = Non
         max_tokens=4000,
     )
     response["iteration"] = int(args.iteration)
-    _validate_review_payload_shape(response, arrangement)
-    _validate_editor_notes(response, arrangement)
+    validate_review_payload_shape(response, arrangement)
+    validate_editor_notes(response, arrangement)
 
     args.out.mkdir(parents=True, exist_ok=True)
     out_path = args.out / "editor_review.json"

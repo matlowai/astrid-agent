@@ -89,6 +89,50 @@ extensions:
           note: Emits only the thumbnail workflow plan and source evidence; generate-thumbnails
             is still a stub, so no image artifact is produced.
 actions:
+  human_notes:
+    cache:
+      mode: none
+    description: Convert human editorial notes into structured inputs for the pipeline.
+    inputs:
+    - description: Human notes file.
+      name: notes
+      required: true
+      type: file
+    outputs: []
+    isolation:
+      mode: subprocess
+    keywords:
+    - notes
+    - human
+    - edit
+    - input
+    - pipeline
+    - text
+    metadata:
+      output_result_manifest: true
+      runtime_file: actions/human_notes/run.py
+      runtime_module: astrid.packs.video_editing.actions.human_notes.run
+    name: Human Notes
+    short_description: Convert human editorial notes into structured pipeline inputs.
+    version: '1.0'
+    invocation:
+      kind: command
+      command:
+        argv:
+        - '{python_exec}'
+        - -m
+        - astrid.packs.video_editing.actions.human_notes.run
+        - --notes
+        - '{notes}'
+        - --out
+        - '{out}'
+    resources:
+    - kind: documentation
+      path: actions/human_notes/STAGE.md
+    - kind: implementation
+      path: actions/human_notes/__init__.py
+    - kind: implementation
+      path: actions/human_notes/run.py
   sync_draft_voiceover:
     name: Synchronize draft voiceover
     version: 1.0.0

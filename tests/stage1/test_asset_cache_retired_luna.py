@@ -9,7 +9,7 @@ from astrid.core.media import require_runtime_materialized_file
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LIVE_FILES = (
     REPO_ROOT / "astrid/core/execution/executor/runner.py",
-    REPO_ROOT / "astrid/packs/editorial/actions/human_notes/run.py",
+    REPO_ROOT / "astrid/packs/video_editing/actions/human_notes/run.py",
     REPO_ROOT / "astrid/packs/editorial/actions/quality_zones/run.py",
     REPO_ROOT / "astrid/packs/editorial/actions/scenes/run.py",
     REPO_ROOT / "astrid/packs/editorial/actions/shots/run.py",

@@ -1,6 +1,6 @@
 # Human Notes
 
-**Action**: `editorial.human_notes`  
+**Action**: `video_editing.human_notes`  
 **Status**: implemented  
 **Role**: Auxiliary (outside the numbered pipeline)
 
@@ -30,7 +30,7 @@ Translate human notes into structured editor_review.json:
 ```python
 import astrid.sdk as sdk
 result = sdk.invoke(
-    "editorial.human_notes",
+    "video_editing.human_notes",
         kind="action", project="demo",
     inputs={
         "instructions": "./notes.txt",
@@ -45,7 +45,7 @@ With full pipeline application after translation:
 ```python
 import astrid.sdk as sdk
 result = sdk.invoke(
-    "editorial.human_notes",
+    "video_editing.human_notes",
         kind="action", project="demo",
     inputs={
         "instructions": "./notes.txt",
@@ -78,7 +78,7 @@ result = sdk.invoke(
 
 ## Auxiliary tool
 
-`editorial.human_notes` is an auxiliary action — it is **not** part of the
+`video_editing.human_notes` is an auxiliary action — it is **not** part of the
 numbered editorial pipeline (steps 0–14). It bridges human editorial intent
 into the pipeline's structured format but does not appear in the automatic
 pipeline execution order. Use it ad-hoc when human revision notes are

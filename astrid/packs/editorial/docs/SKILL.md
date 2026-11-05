@@ -65,7 +65,7 @@ These actions are not part of the numbered 0–14 pipeline. They have no
 
 | Action | What it does |
 |---|---|
-| `editorial.human_notes` | Convert free-text human editorial notes into structured `editor_review.json` for the pipeline. Optional `--apply` chains a full revise cycle. |
+| `video_editing.human_notes` | Convert free-text human editorial notes into structured `editor_review.json` for the pipeline. Optional `--apply` chains a full revise cycle. |
 | `editorial.inspect_cut` | Debugging tool: inspect a cut run directory and print a script/structure/clip text report. Supports `--json` and `--clip` flags. Called internally by `editor_review`. |
 | `editorial.human_review` | Generic human-gate primitive. Serves an HTML page on localhost, collects human decisions as JSON, blocks until submit. Token-authenticated POSTs. |
 | `editorial.boundary_candidates` | Package candidate video frames for visual scene-boundary review. |
@@ -79,7 +79,7 @@ These actions are not part of the numbered 0–14 pipeline. They have no
 - Run individual editorial actions standalone when you need to re-run
   a specific stage (e.g., re-transcribe with different settings, re-triage
   with adjusted quality thresholds).
-- Use `editorial.human_notes` when you have free-text feedback and want
+- Use `video_editing.human_notes` when you have free-text feedback and want
   it converted to structured pipeline inputs.
 - Use `editorial.inspect_cut` for debugging a cut run directory — it
   prints a human-readable report of the timeline, assets, and clips.
@@ -187,7 +187,7 @@ result = sdk.invoke(
 
 # Human notes (auxiliary) — convert feedback to structured inputs
 result = sdk.invoke(
-    "editorial.human_notes",
+    "video_editing.human_notes",
     inputs={"notes": "./my-notes.md"},
     out="./out",
 )
