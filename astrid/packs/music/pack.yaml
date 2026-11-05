@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "pack_api": "2.0",
+  "pack_api": "2.1",
   "id": "music",
   "name": "Music",
   "version": "0.1.0",

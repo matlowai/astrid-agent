@@ -11,7 +11,7 @@ from numpy.typing import NDArray
 
 from astrid.pack_api import AstridError
 from astrid.pack_api import sha256_file
-from astrid.core.timeline.audio_curves import registry
+from astrid.pack_api import audio_curve_registry as registry
 from astrid.packs.music.actions.duck._audio import (
     TAG_KIND,
     Audio,

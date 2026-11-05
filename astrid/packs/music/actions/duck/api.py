@@ -11,11 +11,10 @@ from pathlib import Path
 from astrid.pack_api import AstridError
 from astrid.pack_api import managed_file_digest
 from astrid.pack_api import sha256_file
-from astrid.core.timeline import clip_fields
+from astrid.pack_api import clip_fields
 from astrid.packs.music.actions.duck._audio import read_duck_tag
 from astrid.packs.music.actions.duck.core import Placement, select_music_clip
-from astrid.sdk.media_handles import resolve_media_handle, save_media
-from astrid.sdk.timeline import Checkout
+from astrid.sdk import Checkout, resolve_media_handle, save_media
 
 
 def prepare_snapshot(client, project: str, timeline: str, target: Path, *,
