@@ -82,3 +82,18 @@ def test_runtime_custody_helpers_are_real_and_work(tmp_path):
     )
     stdout, _ = child.communicate(timeout=10)
     assert child.returncode == 0 and stdout.strip() == "spawned"
+
+
+def test_runtime_dirfd_filesystem_is_the_runtime_object(tmp_path):
+    from astrid import pack_api
+    from runtime_protocol.dirfd import filesystem
+
+    fs = pack_api.runtime_dirfd_filesystem()
+    assert fs is filesystem
+    directory_fd = fs.open(tmp_path, fs.O_RDONLY | getattr(fs, "O_DIRECTORY", 0))
+    try:
+        fd = fs.open("proof", fs.O_CREAT | fs.O_WRONLY | fs.O_EXCL, 0o600, dir_fd=directory_fd)
+        fs.close(fd)
+        assert fs.stat("proof", dir_fd=directory_fd).st_size == 0
+    finally:
+        fs.close(directory_fd)

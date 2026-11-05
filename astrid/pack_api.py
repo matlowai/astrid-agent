@@ -10,10 +10,11 @@ from __future__ import annotations
 
 from importlib import import_module as _import_module
 
-VERSION = (2, 2)
+VERSION = (2, 3)
 
 # Public name -> implementation module. No pack may be a dependency here.
 _EXPORTS = {
+    'runtime_dirfd_filesystem': 'astrid.core.execution.platform_helpers',
     'owner_only': 'astrid.core.execution.platform_helpers',
     'spawn_tree': 'astrid.core.execution.platform_helpers',
     'ASTRID_REMOTION_PROJECT_DIR': 'astrid.core.env_vars',
