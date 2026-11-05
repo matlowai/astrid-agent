@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from astrid.pack_api import AstridError
-from astrid.core.media import load_rgba, outline_integrity
+from astrid.pack_api import load_rgba, outline_integrity
 
 # Brand palette from the Astrid style guide, plus pure white and black so
 # neutral backgrounds and outlines remain representable.

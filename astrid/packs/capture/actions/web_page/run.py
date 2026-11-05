@@ -26,10 +26,10 @@ from urllib.parse import urlsplit
 
 from astrid.pack_api import build_manifest, write_manifest
 from astrid.pack_api import AstridError
-from astrid.core.env_vars import ASTRID_REMOTION_PROJECT_DIR
+from astrid.pack_api import ASTRID_REMOTION_PROJECT_DIR
 from astrid.pack_api import PipeReader, PipeWriter, close_pipe_workers
 from astrid.pack_api import popen_owned_group, terminate_group, verify_tree_absent
-from astrid.core.rendering.remotion_runtime import resolve_remotion_project_dir
+from astrid.pack_api import resolve_remotion_project_dir
 
 DEFAULT_VIEWPORT = (1600, 1000)
 DEFAULT_DEVICE_SCALE = 2
