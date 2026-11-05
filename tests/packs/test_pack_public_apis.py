@@ -60,3 +60,25 @@ def test_moving_packs_can_access_existing_media_and_timeline_contracts():
     assert sdk.resolve_media_handle is media_handles.resolve_media_handle
     assert sdk.save_media is media_handles.save_media
     assert sdk.Checkout is timeline.Checkout
+
+
+def test_runtime_custody_helpers_are_real_and_work(tmp_path):
+    import os
+    import subprocess
+    import sys
+    from astrid import pack_api
+    from runtime_protocol import platform
+
+    assert pack_api.owner_only is platform.owner_only
+    assert pack_api.spawn_tree is platform.spawn_tree
+    token = tmp_path / "token"
+    token.write_text("test")
+    pack_api.owner_only(token)
+    if os.name != "nt":
+        assert token.stat().st_mode & 0o777 == 0o600
+    child = pack_api.spawn_tree(
+        [sys.executable, "-c", "print('spawned')"],
+        detached=True, stdout=subprocess.PIPE, text=True,
+    )
+    stdout, _ = child.communicate(timeout=10)
+    assert child.returncode == 0 and stdout.strip() == "spawned"

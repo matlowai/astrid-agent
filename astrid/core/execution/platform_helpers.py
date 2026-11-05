@@ -10,6 +10,7 @@ import stat
 import sys
 
 from runtime_protocol import platform
+from runtime_protocol.platform import owner_only, spawn_tree
 
 
 def owned_by_current_user(path_or_fd, metadata, *, mode: int | None = None,
