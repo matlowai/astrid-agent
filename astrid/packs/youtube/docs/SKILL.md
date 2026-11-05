@@ -109,3 +109,7 @@ publisher_result = result.raw_result["payload"]["action_result"]
 
 Read the linked action guide before admission and follow YouTube's terms and
 copyright requirements.
+
+## Publisher dependency
+
+The upload action requires `banodoco-social==0.1.0` in the host-selected locked Python environment. Provision that distribution from the `banodoco-social` subdirectory of `https://github.com/banodoco/banodoco-workspace` at commit `518dc2ff99a024b188d2d36dbd2598de3d5d73e6`. The version requirement expresses compatibility; the host lock must record and verify the source and commit.
