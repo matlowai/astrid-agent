@@ -19,7 +19,9 @@ from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping, Sequence
 
-from runtime_protocol.dirfd import filesystem as os
+from astrid.pack_api import runtime_dirfd_filesystem
+
+os = runtime_dirfd_filesystem()
 
 from astrid.sdk import invoke
 from astrid.pack_api import build_manifest, write_manifest

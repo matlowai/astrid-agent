@@ -29,8 +29,9 @@ from pathlib import Path  # noqa: E402
 from typing import Any, Mapping  # noqa: E402
 from urllib.parse import parse_qs, unquote, urldefrag, urljoin, urlparse  # noqa: E402
 
-from runtime_protocol import platform  # noqa: E402
-from runtime_protocol.dirfd import filesystem as os  # noqa: E402
+from astrid.pack_api import owner_only, runtime_dirfd_filesystem  # noqa: E402
+
+os = runtime_dirfd_filesystem()
 
 from astrid.pack_api import StaleStateConflict, apply_experiment_review_save, is_experiment_review_save, load_experiment_review_state
 from astrid.pack_api import log_and_swallow  # noqa: E402
@@ -745,7 +746,7 @@ def _publish_receiver_session(path: Path, url: str) -> tuple[Path, int, int, byt
     fd, temporary = tempfile.mkstemp(prefix=".review-session-", dir=path.parent)
     try:
         with os.fdopen(fd, "wb") as stream:
-            platform.owner_only(stream.fileno())
+            owner_only(stream.fileno())
             stream.write(payload)
             stream.flush()
             os.fsync(stream.fileno())
