@@ -134,7 +134,7 @@ actions:
       requirements: []
     metadata:
       output_result_manifest: true
-      command_builder: astrid.packs.video_editing.actions.hype.run.build_pool_steps
+      command_builder: astrid.packs.training.pipeline.build_pool_steps
       pipeline_step: pool_build
       pipeline_step_order: 7
       runtime_entrypoint: main
@@ -197,7 +197,7 @@ actions:
       network: false
       requirements: []
     metadata:
-      command_builder: astrid.packs.video_editing.actions.hype.run.build_pool_steps
+      command_builder: astrid.packs.training.pipeline.build_pool_steps
       output_result_manifest: true
       pipeline_step: pool_merge
       pipeline_step_order: 8
