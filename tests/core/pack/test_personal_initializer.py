@@ -5,6 +5,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
+from astrid.pack_api import VERSION
+from astrid.pack_validation import validate_pack
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 RUNTIME_ROOT = Path("/home/user/machine/ws-C/src/astrid-runtime")
@@ -53,9 +57,18 @@ def test_explicit_initializer_creates_minimal_personal_pack_once(tmp_path: Path)
         b"id: personal\n"
         b"name: Personal\n"
         b"version: 0.1.0\n"
-        b'pack_api: "1.0"\n'
-        b"actions: {}\n"
+        + f'pack_api: "{VERSION[0]}.{VERSION[1]}"\n'.encode()
+        + b"actions: {}\n"
     )
+    manifest = yaml.safe_load((personal / "pack.yaml").read_text())
+    identity = str(personal.resolve())
+    result = validate_pack(
+        mode="inventory", manifest=manifest,
+        candidate={"id": "personal", "canonical_root": identity},
+        selected={}, core_api=VERSION, release_pins={}, python_packages={},
+        import_violations=(), canonical_personal_root=identity,
+    )
+    assert result["ok"], result
 
 
 def test_existing_personal_pack_bytes_survive_initialization(tmp_path: Path) -> None:
