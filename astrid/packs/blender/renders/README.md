@@ -6,7 +6,7 @@ engine (`astrid/packs/blender/render_core.py`) without living inside it.
 **Core = reusable machinery** (scene builder, render server, executor, deploy,
 mesh fetch). **`renders/` = disposable, per-shot scenes.** Keeping them separate
 means you can iterate on a render (or throw one away) without touching the
-engine, and anyone can drop in a new render without understanding the core.
+engine, and anyone can add a new render without changing the core.
 
 ## Add a render
 
@@ -20,7 +20,9 @@ engine, and anyone can drop in a new render without understanding the core.
    constants). `build()` runs **client-side** so it MAY import Astrid helpers
    (e.g. `render_core.normalize_settings`) to compute the script.
 
-That's it — it's auto-discovered by name.
+4. Import the module's `build` function in `renders/__init__.py` and add it to
+   the `PRESETS` registry under the desired name. Presets are explicitly
+   registered; unregistered names are rejected.
 
 Template:
 

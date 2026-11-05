@@ -543,3 +543,51 @@ def test_service_template_defaults_to_loopback() -> None:
     unit = (PACK_DIR / "server" / deploy.SERVICE_FILE).read_text(encoding="utf-8")
     assert "Environment=BLENDER_RENDER_HOST=127.0.0.1\n" in unit
     assert "0.0.0.0" not in unit
+
+
+def test_deployed_server_imports_without_astrid_install(tmp_path: Path) -> None:
+    import os
+    import subprocess
+    import sys
+
+    for source, relative in deploy.SERVER_FILES:
+        dest = tmp_path / relative
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(source.read_bytes())
+    result = subprocess.run(
+        [sys.executable, "-c", "from astrid.packs.blender.server import blender_render_server as s; assert s.render_core.DEFAULT_SCENE"],
+        cwd=tmp_path, env={"PYTHONPATH": str(tmp_path), "PATH": os.defpath},
+        capture_output=True, text=True, timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_deploy_launches_namespace_in_both_modes() -> None:
+    module = "astrid.packs.blender.server.blender_render_server"
+    systemd_host = FakeHost()
+    deploy.deploy_to_host(systemd_host, port=8999)
+    assert f"ExecStart=/usr/bin/python3 -m {module}" in systemd_host.files[UNIT_PATH]
+    for _, relative in deploy.SERVER_FILES:
+        assert f"{deploy.REMOTE_DIR}/{relative}" in systemd_host.files
+    fallback_host = FakeHost(systemd=False)
+    deploy.deploy_to_host(fallback_host, port=8999)
+    script = fallback_host.files[f"{deploy.REMOTE_DIR}/start.sh"]
+    assert f"cd {deploy.REMOTE_DIR}" in script
+    assert f"-m {module}" in script
+    assert "[a]strid.packs.blender.server.blender_render_server" in script
+
+
+def test_ttl_teardown_uses_detached_custody(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import builtins
+    import io
+
+    calls = []
+    log = io.BytesIO()
+    monkeypatch.setattr(deploy, "spawn_tree", lambda *args, **kwargs: calls.append((args, kwargs)))
+    monkeypatch.setattr(builtins, "open", lambda *args, **kwargs: log)
+    deploy._schedule_ttl_teardown("pod-id", 45)
+    args, kwargs = calls[0]
+    assert "sleep 45" in args[0][2]
+    assert "teardown-runpod --pod-id pod-id" in args[0][2]
+    assert kwargs["detached"] is True
+    assert kwargs["stdin"] == deploy.subprocess.DEVNULL

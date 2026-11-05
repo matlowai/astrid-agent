@@ -1,5 +1,5 @@
 schema_version: 3
-pack_api: "2.0"
+pack_api: "2.2"
 id: blender
 name: Astrid Blender
 version: 1.0.0

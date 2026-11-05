@@ -55,10 +55,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
-# render_core is a sibling module (stdlib-only); allow running from the server
-# directory without an Astrid install.
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import render_core  # noqa: E402
+# The deployed namespace contains this server and its stdlib-only core.
+from astrid.packs.blender import render_core
 
 BLENDER_EXEC = os.environ.get("BLENDER_EXEC", "blender")
 FFMPEG_EXEC = os.environ.get("FFMPEG_EXEC", "ffmpeg")

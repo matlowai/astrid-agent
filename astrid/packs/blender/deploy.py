@@ -46,9 +46,7 @@ import time
 from pathlib import Path
 from typing import Any, NamedTuple
 
-from runtime_protocol import platform
-
-from astrid.pack_api import StaticChoices
+from astrid.pack_api import StaticChoices, owner_only, spawn_tree
 
 PACK_DIR = Path(__file__).resolve().parent
 SERVER_DIR = PACK_DIR / "server"
@@ -56,11 +54,10 @@ DEFAULT_PORT = int(os.environ.get("BLENDER_RENDER_PORT", "8778"))
 REMOTE_DIR = "/opt/astrid-blender-render"
 
 # (local source path, remote filename). render_core sits at the pack root and is
-# imported by the server from the same directory (sys.path insert), so it must be
-# deployed alongside blender_render_server.py.
+# deployed with the server in a self-contained Python namespace tree.
 SERVER_FILES = (
-    (PACK_DIR / "render_core.py", "render_core.py"),
-    (SERVER_DIR / "blender_render_server.py", "blender_render_server.py"),
+    (PACK_DIR / "render_core.py", "astrid/packs/blender/render_core.py"),
+    (SERVER_DIR / "blender_render_server.py", "astrid/packs/blender/server/blender_render_server.py"),
 )
 SERVICE_FILE = "blender-render-api.service"
 
@@ -97,7 +94,7 @@ def _remember_token(label: str, token: str) -> Path:
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         fh.write(token + "\n")
-    platform.owner_only(path)
+    owner_only(path)
     return path
 
 
@@ -354,12 +351,12 @@ def deploy_to_host(
         print("  systemd unavailable, launching via setsid start script ...", flush=True)
         start_script = (
             "#!/bin/bash\n"
-            "pkill -f blender_render_server.py 2>/dev/null\n"
+            "pkill -f '[a]strid.packs.blender.server.blender_render_server' 2>/dev/null\n"
             f"cd {REMOTE_DIR}\n"
             f"export BLENDER_EXEC={blender_exec} BLENDER_RENDER_PORT={port}\n"
             f"export BLENDER_RENDER_HOST={DEPLOY_BIND_HOST}\n"
             f"export BLENDER_RENDER_TOKEN={token}\n"
-            f"setsid /usr/bin/python3 {REMOTE_DIR}/blender_render_server.py </dev/null >>{REMOTE_DIR}/server.log 2>&1 &\n"
+            f"setsid /usr/bin/python3 -m astrid.packs.blender.server.blender_render_server </dev/null >>{REMOTE_DIR}/server.log 2>&1 &\n"
         )
         host.put_text(f"{REMOTE_DIR}/start.sh", start_script)
         _chmod(host, f"{REMOTE_DIR}/start.sh", "700")
@@ -526,7 +523,7 @@ def _schedule_ttl_teardown(pod_id: str, ttl_seconds: int) -> None:
         f"{shlex.quote(sys.executable)} -X utf8 -m {mod} teardown-runpod --pod-id {pod_id}"
     )
     log = "/tmp/astrid-blender-runpod-ttl.log"
-    platform.spawn_tree(
+    spawn_tree(
         ["bash", "-c", cmd],
         stdout=open(log, "ab"),
         stderr=subprocess.STDOUT,
