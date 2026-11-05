@@ -48,7 +48,7 @@ from astrid.pack_api import build_rubric_response_schema, validate_conclusions, 
 from astrid.pack_api import ExperimentValidationError, validate_experiment
 from astrid.pack_api import init_experiment_review_state
 from astrid.pack_api import run_subprocess  # noqa: E402
-from astrid import sdk  # noqa: E402
+import astrid.sdk as sdk  # noqa: E402
 
 _REVIEW_CHILD_KEY = "experiment-human-review"
 _REVIEW_WAIT_SECONDS = 30.0

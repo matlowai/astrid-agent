@@ -1,4 +1,8 @@
 schema_version: 3
+pack_api: "2.0"
+dependencies:
+  python_requirements:
+    - PyYAML>=6.0
 id: typed_timeline
 name: Typed Timeline Mapper
 version: "1.0.0"

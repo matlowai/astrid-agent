@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
-from astrid import sdk
+import astrid.sdk as sdk
 from astrid.packs.stream_content.actions.distill.plan_template import (
     build_plan_v2,
     compute_plan_hash,
