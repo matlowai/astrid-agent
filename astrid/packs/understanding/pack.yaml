@@ -345,7 +345,7 @@ actions:
       api_provider: gemini
       env: [GEMINI_API_KEY]
       required_permissions: [network, environment]
-      command_builder: astrid.packs.video_editing.actions.hype.run.build_pool_steps
+      command_builder: astrid.packs.understanding.pipeline.build_pool_steps
       pipeline_step: scene_describe
       pipeline_step_order: 5
       requires_timeline: false

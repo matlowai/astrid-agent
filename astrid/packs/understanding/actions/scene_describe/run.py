@@ -18,7 +18,7 @@ from typing import Any, Sequence
 from astrid.pack_api import build_manifest, write_manifest
 from astrid.pack_api import require_runtime_materialized_file
 from astrid.pack_api import register_outputs
-from astrid.core.util.llm_clients import GeminiClient, build_gemini_client
+from astrid.pack_api import GeminiClient, build_gemini_client
 from astrid.pack_api import utc_now_seconds
 
 SCENE_DESCRIPTIONS_VERSION = 1

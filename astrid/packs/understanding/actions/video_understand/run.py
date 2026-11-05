@@ -20,7 +20,7 @@ from astrid.pack_api import build_manifest, write_manifest
 from astrid.pack_api import add_choice_arg
 from astrid.pack_api import AstridError
 from astrid.pack_api import ffprobe_duration_seconds
-from astrid.core.util.llm_clients import build_gemini_client
+from astrid.pack_api import build_gemini_client
 from astrid.packs.understanding.shared._common import emit_dry_run_preview
 
 MODEL_PRESETS = {
