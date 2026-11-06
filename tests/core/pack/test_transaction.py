@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+from astrid.pack_api import VERSION as PACK_API_VERSION
 from astrid.core.pack.identity import pack_digest, read_pin, write_pin
 from astrid.core.pack.install import PackInstallError, install_pack
 from astrid.core.pack.transaction import (
@@ -39,7 +40,7 @@ def manifest(pack_id: str, dependencies: tuple[str, ...] = (),
         dependency_lines.append("  python_requirements: [" + ", ".join(python_requirements) + "]")
     dependency_field = "" if not dependency_lines else "dependencies:\n" + "\n".join(dependency_lines) + "\n"
     return (f"schema_version: 3\nid: {pack_id}\nname: {pack_id.title()}\nversion: 1.0.0\n"
-            'pack_api: "1.0"\n' + dependency_field +
+            f'pack_api: "{PACK_API_VERSION[0]}.{PACK_API_VERSION[1]}"\n' + dependency_field +
             "documentation: {kind: none, reason: Transaction fixture.}\n")
 
 
@@ -2587,3 +2588,188 @@ def test_real_update_command_reports_an_equal_byte_update_as_unchanged(
     assert "Updated" not in out
     assert f"alpha, shared unchanged (generation {first.transaction_id})." in out
     assert read_group(packs_root).transaction_id == first.transaction_id
+
+@pytest.mark.parametrize("operation", ["install", "update", "rollback"])
+def test_consent_does_not_hold_collection_lock_across_processes(
+        repo: Repository, packs_root: Path, operation: str) -> None:
+    """Another process must acquire collection custody while consent is pending."""
+    operation_fn = _seed_personal_and_operation(repo, packs_root, operation)
+    observed = []
+
+    def consent(_preview):
+        script = (
+            "import sys; from astrid.core.pack.transaction import group_read_lock; "
+            "lock=group_read_lock(sys.argv[1], exclusive=True); "
+            "lock.__enter__(); print('acquired', flush=True); lock.__exit__(None,None,None)"
+        )
+        try:
+            child = subprocess.run([sys.executable, "-c", script, str(packs_root)],
+                                   capture_output=True, text=True, timeout=2, check=True)
+        except subprocess.TimeoutExpired:
+            pytest.fail("another process could not acquire collection custody during consent")
+        observed.append(child.stdout.strip())
+        return True
+
+    operation_fn(consent=consent)
+    assert observed == ["acquired"]
+
+@pytest.mark.parametrize("operation", ["install", "update", "rollback"])
+def test_personal_edit_during_consent_fails_closed_and_survives(
+        repo: Repository, packs_root: Path, operation: str) -> None:
+    """The consented snapshot cannot overwrite a concurrent personal edit."""
+    run = _seed_personal_and_operation(repo, packs_root, operation)
+    before = read_group(packs_root)
+    edited = packs_root / "personal" / "kept.txt"
+
+    def consent(_preview):
+        script = (
+            "import sys; from pathlib import Path; "
+            "from astrid.core.pack.transaction import group_read_lock; "
+            "lock=group_read_lock(sys.argv[1], exclusive=True); lock.__enter__(); "
+            "Path(sys.argv[1], 'personal', 'kept.txt').write_bytes(b'edited during consent'); "
+            "lock.__exit__(None,None,None)"
+        )
+        subprocess.run([sys.executable, "-c", script, str(packs_root)],
+                       capture_output=True, text=True, timeout=2, check=True)
+        return True
+
+    with pytest.raises(PackInstallError) as caught:
+        run(consent=consent)
+    assert caught.value.code == "collection_changed"
+    assert edited.read_bytes() == b"edited during consent"
+    after = read_group(packs_root)
+    assert (after.transaction_id, after.revision) == (before.transaction_id, before.revision)
+
+
+@pytest.mark.parametrize("operation", ["install", "update", "rollback"])
+@pytest.mark.parametrize("result", ["decline", "exception"])
+def test_consent_refusal_or_exception_preserves_live_collection(
+        repo: Repository, packs_root: Path, operation: str, result: str) -> None:
+    run = _seed_personal_and_operation(repo, packs_root, operation)
+    before = tree_snapshot(packs_root)
+
+    def consent(_preview):
+        if result == "exception":
+            raise RuntimeError("prompt failed")
+        return False
+
+    with pytest.raises((PackInstallError, RuntimeError)) as caught:
+        run(consent=consent)
+    if result == "decline":
+        assert isinstance(caught.value, PackInstallError)
+        assert caught.value.code == "user_cancelled"
+    else:
+        assert isinstance(caught.value, RuntimeError)
+    assert tree_snapshot(packs_root) == before
+
+
+@pytest.mark.parametrize("operation", ["install", "update", "rollback"])
+@pytest.mark.parametrize("exclusive", [False, True])
+def test_transaction_refuses_caller_owned_custody_before_consent(
+        repo: Repository, packs_root: Path, operation: str, exclusive: bool) -> None:
+    from astrid.core.pack.transaction import group_read_lock
+
+    run = _seed_personal_and_operation(repo, packs_root, operation)
+    called = []
+    with group_read_lock(packs_root, exclusive=exclusive):
+        with pytest.raises(PackInstallError) as caught:
+            run(consent=lambda _preview: called.append(True) or True)
+        assert caught.value.code == "transaction_busy"
+    assert called == []
+
+@pytest.mark.parametrize("operation", ["update", "rollback"])
+def test_target_pack_edit_during_consent_is_preserved_and_refused(
+        repo: Repository, packs_root: Path, operation: str) -> None:
+    run = _seed_personal_and_operation(repo, packs_root, operation)
+    before = read_group(packs_root)
+    target = packs_root / "alpha" / "payload.txt"
+
+    def consent(_preview):
+        script = (
+            "import sys; from pathlib import Path; "
+            "from astrid.core.pack.transaction import group_read_lock; "
+            "lock=group_read_lock(sys.argv[1], exclusive=True); lock.__enter__(); "
+            "Path(sys.argv[1], 'alpha', 'payload.txt').write_bytes(b'concurrent target edit'); "
+            "lock.__exit__(None,None,None)"
+        )
+        subprocess.run([sys.executable, "-c", script, str(packs_root)],
+                       capture_output=True, text=True, timeout=2, check=True)
+        return True
+
+    with pytest.raises(PackInstallError) as caught:
+        run(consent=consent)
+    assert caught.value.code == "collection_changed"
+    assert target.read_bytes() == b"concurrent target edit"
+    after = read_group(packs_root)
+    assert (after.transaction_id, after.revision) == (before.transaction_id, before.revision)
+
+
+def test_prompt_exception_releases_custody_for_other_process(repo: Repository, packs_root: Path) -> None:
+    run = _seed_personal_and_operation(repo, packs_root, "install")
+
+    def consent(_preview):
+        raise RuntimeError("prompt failed")
+
+    with pytest.raises(RuntimeError, match="prompt failed"):
+        run(consent=consent)
+    script = (
+        "import sys; from astrid.core.pack.transaction import group_read_lock; "
+        "lock=group_read_lock(sys.argv[1], exclusive=True); "
+        "lock.__enter__(); print('acquired', flush=True); lock.__exit__(None,None,None)"
+    )
+    child = subprocess.run([sys.executable, "-c", script, str(packs_root)],
+                           capture_output=True, text=True, timeout=2, check=True)
+    assert child.stdout.strip() == "acquired"
+
+@pytest.mark.parametrize("operation", ["install", "update", "rollback"])
+def test_replacing_custody_lock_during_consent_refuses_publication(
+        repo: Repository, packs_root: Path, operation: str) -> None:
+    run = _seed_personal_and_operation(repo, packs_root, operation)
+    before = tree_snapshot(packs_root)
+    lock_path = packs_root.parent / ("." + packs_root.name + ".transaction.lock")
+    original = lock_path.stat().st_ino
+
+    def consent(_preview):
+        lock_path.unlink()
+        lock_path.write_bytes(b"replacement")
+        assert lock_path.stat().st_ino != original
+        return True
+
+    with pytest.raises(PackInstallError) as caught:
+        run(consent=consent)
+    assert caught.value.code == "unsafe_path"
+    assert tree_snapshot(packs_root) == before
+
+
+@pytest.mark.parametrize("operation", ["install", "update"])
+def test_staged_pack_edit_during_consent_refuses_publication(
+        repo: Repository, packs_root: Path, operation: str) -> None:
+    run = _seed_personal_and_operation(repo, packs_root, operation)
+    before = tree_snapshot(packs_root)
+
+    def consent(preview):
+        (Path(preview["packs"]["alpha"]["staged_root"]) / "payload.txt").write_bytes(b"changed staged source")
+        return True
+
+    with pytest.raises(PackInstallError) as caught:
+        run(consent=consent)
+    assert caught.value.code == "collection_changed"
+    assert tree_snapshot(packs_root) == before
+
+@pytest.mark.parametrize("exclusive", [False, True])
+def test_consent_refuses_caller_custody_for_other_collection(
+        repo: Repository, packs_root: Path, tmp_path: Path, exclusive: bool) -> None:
+    from astrid.core.pack.transaction import group_read_lock
+
+    other = tmp_path / "other" / "packs"
+    other.parent.mkdir()
+    # Create the stable lock before exercising shared custody.
+    with group_read_lock(other, exclusive=True):
+        pass
+    run = _seed_personal_and_operation(repo, packs_root, "install")
+    called = []
+    with group_read_lock(other, exclusive=exclusive):
+        with pytest.raises(PackInstallError) as caught:
+            run(consent=lambda _preview: called.append(True) or True)
+        assert caught.value.code == "transaction_busy"
+    assert called == []
