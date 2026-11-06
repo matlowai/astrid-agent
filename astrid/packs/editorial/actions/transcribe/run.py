@@ -12,6 +12,10 @@ from astrid.pack_api import guard_canonical_entrypoint
 guard_canonical_entrypoint('editorial.transcribe')
 import argparse
 import json
+from importlib import metadata
+
+from packaging.specifiers import SpecifierSet
+from packaging.version import InvalidVersion, Version
 import os
 import re
 import shutil
@@ -33,6 +37,7 @@ SILENCE_END_RE = re.compile(r"silence_end:\s*([0-9]+(?:\.[0-9]+)?)")
 CUT_EPSILON_SEC = 0.05
 HALLUCINATION_DENYLIST = {".", "Thanks for watching!", "Please subscribe!", "Thank you.", "Thank you so much.", "All right.", "Get out of here."}
 PYANNOTE_PIPELINE = "pyannote/speaker-diarization-3.1"
+PYANNOTE_REQUIREMENT = SpecifierSet(">=3.1,<4")
 def run(cmd: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         cmd,
@@ -183,6 +188,20 @@ def require_hf_token(diarize_mode: str | None) -> str | None:
     except AstridError:
         pass
     raise SystemExit("HF_TOKEN is required when using --diarize pyannote")
+def qualify_diarization(diarize_mode: str | None) -> None:
+    """Check the selected interpreter before credentials or media processing."""
+    if diarize_mode != "pyannote":
+        return
+    try:
+        installed = metadata.version("pyannote-audio")
+        compatible = PYANNOTE_REQUIREMENT.contains(Version(installed))
+    except (metadata.PackageNotFoundError, InvalidVersion, TypeError):
+        compatible = False
+    if not compatible:
+        raise SystemExit(
+            "--diarize pyannote requires pyannote-audio>=3.1,<4 in the selected Python environment"
+        )
+
 def diarize_audio(audio_path: Path, cache_dir: Path, diarize_mode: str | None) -> dict[str, Any] | None:
     if diarize_mode != "pyannote":
         return None
@@ -382,6 +401,7 @@ def _ensure_declared_chunk_plan(out_dir: Path, metadata_path: Path) -> Path:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    qualify_diarization(args.diarize)
     args.audio = require_runtime_materialized_file(args.audio, label="--audio")
     audio_path = args.audio.resolve()
     if not audio_path.is_file():

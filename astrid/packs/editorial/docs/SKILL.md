@@ -225,3 +225,5 @@ result = sdk.invoke(
     out="./out",
 )
 ```
+
+Optional `--diarize pyannote` requires `pyannote-audio>=3.1,<4` in the selected Python environment. The base installation does not require it. The requested mode uses the configured Hugging Face model and credentials.
