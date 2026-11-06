@@ -16,6 +16,8 @@ from typing import Mapping
 # mappings describe ownership, not permission: the distribution must still be
 # declared in the pack manifest.  Keep defaults deterministic across hosts.
 _PYTHON_DISTRIBUTIONS = {"PIL": "Pillow", "yaml": "PyYAML"}
+# Namespace distributions own a specific subtree, not the entire namespace.
+_PYTHON_NAMESPACE_DISTRIBUTIONS = {"pyannote.audio": "pyannote-audio"}
 
 
 @dataclass(frozen=True)
@@ -98,6 +100,11 @@ def _classify(module: str, *, level: int, pack_id: str, contract: ImportContract
         return "deep_import", "Import only a declared pack's public api module."
     if module == "astrid" or module.startswith("astrid."):
         return "deep_import", "Import public core names from astrid.pack_api."
+    for prefix, distribution in _PYTHON_NAMESPACE_DISTRIBUTIONS.items():
+        if module == prefix or module.startswith(prefix + "."):
+            if distribution in declared_python:
+                return None
+            return "undeclared_python", "Declare this Python package in dependencies.python_requirements."
     mapped = contract.python_modules.get(root, _PYTHON_DISTRIBUTIONS.get(root))
     if mapped:
         normalized = mapped.lower().replace("_", "-").replace(".", "-")

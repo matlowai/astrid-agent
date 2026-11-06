@@ -18,6 +18,24 @@ def _manifest() -> dict[str, object]:
     }
 
 
+def test_declared_optional_namespace_does_not_authorize_siblings(tmp_path):
+    pack = _pack(tmp_path)
+    (pack / "entry.py").write_text(
+        "from pyannote.audio import Pipeline\nimport pyannote.audio.core\n"
+        "import pyannote.database\nimport pyannote\n", encoding="utf-8"
+    )
+    manifest = _manifest()
+    manifest["dependencies"] = {"packs": [], "python_requirements": [
+        "pyannote.audio>=3; extra == 'diarize'"
+    ]}
+    found = check_pack_imports(pack, contract=ImportContract(), manifest=manifest)
+    assert [(item.module, item.code) for item in found] == [
+        ("pyannote.database", "undeclared_python"), ("pyannote", "undeclared_python")
+    ]
+    manifest["dependencies"] = {"packs": [], "python_requirements": []}
+    assert len(check_pack_imports(pack, contract=ImportContract(), manifest=manifest)) == 4
+
+
 def test_default_distribution_mapping_requires_real_declared_packages(tmp_path):
     pack = _pack(tmp_path)
     (pack / "entry.py").write_text(

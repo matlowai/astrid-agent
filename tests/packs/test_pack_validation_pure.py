@@ -5,7 +5,32 @@ from pathlib import Path
 import pytest
 
 from astrid.pack_imports import ImportContract, check_pack_imports
-from astrid.pack_validation import validate_pack
+from astrid.pack_validation import validate_pack, _requirements
+
+
+def test_optional_requirement_uses_only_explicit_marker_snapshot():
+    from packaging.markers import default_environment
+
+    manifest = {"dependencies": {"python_requirements": ["pyannote.audio>=3,<4; extra == 'diarize'"]}}
+    environment = default_environment()
+    assert _requirements(manifest, {}, environment) is None
+    selected = {**environment, "extra": "diarize"}
+    assert _requirements(manifest, {}, selected)[0] == "missing_python"
+    assert _requirements(manifest, {"pyannote-audio": "2.0"}, selected)[0] == "missing_python"
+    assert _requirements(manifest, {"pyannote-audio": "3.1"}, selected) is None
+    assert _requirements(manifest, {}, None)[0] == "invalid_manifest"
+    assert "extra" not in environment
+
+
+@pytest.mark.parametrize("requirement", [
+    "pkg[unsafe]; extra == 'other'",
+    "pkg @ https://example.invalid/pkg.whl ; extra == 'other'",
+])
+def test_inactive_marker_does_not_admit_unverifiable_requirement(requirement):
+    from packaging.markers import default_environment
+
+    manifest = {"dependencies": {"python_requirements": [requirement]}}
+    assert _requirements(manifest, {}, default_environment())[0] == "invalid_manifest"
 
 
 def _write_pack(root: Path, source: str) -> Path:
