@@ -1,5 +1,9 @@
 schema_version: 3
 pack_api: "2.2"
+dependencies:
+  python_requirements:
+    - runpod==1.12.1.dev6
+    - runpod-lifecycle==0.3.1.dev0
 id: blender
 name: Astrid Blender
 version: 1.0.0
