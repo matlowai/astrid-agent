@@ -758,8 +758,6 @@ actions:
       path: actions/event_talks/run.py
     - kind: implementation
       path: actions/event_talks/plan_template.py
-    - kind: implementation
-      path: actions/event_talks/workflow.py
     - kind: data
       path: actions/event_talks/data/ados_sunday_speakers.json
     - kind: documentation
@@ -1510,8 +1508,6 @@ actions:
       path: actions/thumbnail_maker/run.py
     - kind: implementation
       path: actions/thumbnail_maker/plan_template.py
-    - kind: implementation
-      path: actions/thumbnail_maker/workflow.py
     - kind: documentation
       path: actions/thumbnail_maker/STAGE.md
     cache:
