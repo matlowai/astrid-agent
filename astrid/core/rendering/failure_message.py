@@ -76,11 +76,17 @@ def render_failure_message(detail: str, *, remotion_reason: str | None = None,
             headline = "Remotion isn't installed on this machine"
         elif "unexpected name:" in reason or "unexpected version:" in reason:
             headline = "Remotion's installed packages don't match this version of Astrid"
+        elif "launch" in reason or "runtime validation" in reason:
+            headline = "Remotion was validated at host launch, and this process no longer matches it"
         elif "Node" in reason or "NODE_EXECUTABLE" in reason:
             headline = "Remotion needs the pinned Node version"
         else:
             headline = "Remotion isn't ready on this machine"
-        fix = _repair_install(environment) or _repair_source(environment)
+        if headline.startswith("Remotion was validated at host launch"):
+            # The install may be fine: the environment or installed files changed after the host started.
+            fix = "Restart Astrid's pack host so it validates Remotion again; it checks once, when it starts."
+        else:
+            fix = _repair_install(environment) or _repair_source(environment)
     else:
         headline = "The renderer isn't available" if unavailable else "The render couldn't finish"
         fix = recovery or "Review the details, correct the render settings or timeline, and try again."

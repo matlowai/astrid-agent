@@ -48,3 +48,18 @@ def test_composition_mismatch_keeps_source_checkout_recovery():
     )
     assert "npm ci" in message
     assert "/source/remotion" in message
+
+
+def test_launch_validation_drift_says_restart_the_host_not_npm_ci():
+    reason = ("missing or invalid launch validation (FileNotFoundError: [Errno 2] No such file or directory: "
+              "'/venv/lib/site.py'); explicit owned validation required")
+    message = render_failure_message(
+        f"rendering.remotion is unavailable on this host: {reason}",
+        remotion_reason=reason,
+        environment={"ASTRID_REMOTION_PROJECT_DIR": "/source/remotion"},
+    )
+
+    assert message.startswith("Headline: Remotion was validated at host launch")
+    assert "FileNotFoundError" in message
+    assert "Restart Astrid's pack host" in message
+    assert "npm ci" not in message

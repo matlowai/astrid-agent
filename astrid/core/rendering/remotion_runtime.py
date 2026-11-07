@@ -1245,7 +1245,9 @@ def _validated_runtime(project_dir: Path, *, environment: Mapping[str, str] | No
             raise RemotionValidationError("runtime validation lacks completed original probe custody")
         return entry
     except (OSError, KeyError, ValueError, TypeError) as exc:
-        raise RemotionValidationError("missing or invalid launch validation; explicit owned validation required") from exc
+        raise RemotionValidationError(
+            f"missing or invalid launch validation ({type(exc).__name__}: {exc}); explicit owned validation required"
+        ) from exc
 
 def _configured_node_executable(environment: Mapping[str, str] | None = None) -> tuple[Path | None, str | None]:
     source = os.environ if environment is None else environment
