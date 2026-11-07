@@ -413,6 +413,26 @@ def test_second_occurrence_and_parent_clips_keep_their_own_identity_and_metadata
     assert encoded(result.bundle) == encoded(bundle)
 
 
+def test_named_cut_on_parent_clips_is_refused_by_name():
+    bundle = film()
+    card(bundle)["app"]["astrid"] = {}
+    bundle["parent"]["tracks"] = [{"id": "plate", "kind": "visual"}]
+    bundle["parent"]["clips"] = [{"id": "c1", "track": "plate", "asset": "take", "at": 0, "hold": 2,
+                                  "app": {"astrid": {"cut": "c1"}}}]
+    before = encoded(bundle)
+    with pytest.raises(TimingCompileError, match=r"cut 'c1' \(app.astrid.cut\) is on parent clips c1"):
+        project(bundle)
+    assert encoded(bundle) == before
+
+
+def test_a_missing_key_is_named():
+    bundle = film()
+    card(bundle)["app"]["astrid"] = {}
+    del bundle["shots"]["shot"]
+    with pytest.raises(TimingCompileError, match="missing key 'shot'"):
+        project(bundle)
+
+
 def test_first_word_picture_uses_main_take_in_point_policy():
     bundle, document, pin = captured()
     text = '"again" in line #1'
