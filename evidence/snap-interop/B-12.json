@@ -1,0 +1,16 @@
+{
+ "id": "B-12",
+ "note": "Lab logs copied whole; local paths replaced by <lab>, <study>, <fork-work>.",
+ "sources": [
+  {
+   "source": "<fork-work>/logs/fix-working-copy-edit-message-before.log",
+   "bytes": 280,
+   "content": "FAILED tests/v10/test_domain_cli_projects_timelines.py::test_timelines_show_human_output_reads_transform_keyframes\nFAILED tests/v10/test_domain_cli_projects_timelines.py::test_a_trim_refused_by_an_open_working_copy_says_how_to_clear_it\n2 failed, 139 passed, 1 deselected in 7.50s\n"
+  },
+  {
+   "source": "<fork-work>/logs/fix-working-copy-edit-message-after.log",
+   "bytes": 159,
+   "content": "FAILED tests/v10/test_domain_cli_projects_timelines.py::test_timelines_show_human_output_reads_transform_keyframes\n1 failed, 140 passed, 1 deselected in 7.63s\n"
+  }
+ ]
+}
