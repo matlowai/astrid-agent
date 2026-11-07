@@ -1279,13 +1279,14 @@ print(json.dumps({'prefix':sys.prefix,'purelib':sysconfig.get_path('purelib'),'o
         # unmodified lock beside the installed package, then admit those bytes
         # before declaring services. The source and npm trees never substitute
         # for a missing or changed wheel resource.
-        _secure_installed_schema_inputs(folder, product_root)
         # Exclusive creation refuses pre-existing objects (including symlinks).
+        # The lock is copied first: securing the schema inputs includes it.
         with (agent / "runtime.lock.json").open("rb") as source_lock:
             with (product_root / "runtime.lock.json").open("xb") as installed_lock:
                 shutil.copyfileobj(source_lock, installed_lock)
                 if os.name != "nt":
                     os.fchmod(installed_lock.fileno(), 0o600)
+        _secure_installed_schema_inputs(folder, product_root)
         schema = self._verify_local_timeline_schema(product_root)
         env["ASTRID_TIMELINE_SCHEMA_PYTHONPATH"] = str(schema)
         self._verify_installed_timeline_schema(python, product_root, env)
