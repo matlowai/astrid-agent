@@ -168,6 +168,27 @@ def test_declared_render_worker_controls_are_refused_before_launch(tmp_path, mon
         host._child_environment(record, tmp_path / "attempt", explicit_env=dict(record.definition.command.env))
 
 
+def test_source_launch_validates_the_native_worker_pythonpath_the_host_will_use(tmp_path):
+    import json
+    from pathlib import Path
+
+    import runtime_protocol
+
+    from astrid.core.execution.generic_host import ASTRID_PACKS_PATH, _launch_worker_probe_environments
+    from tests.test_generic_host import _write_manifest
+
+    manifest = _write_manifest(tmp_path / "render-worker", capability_id="test.render")
+    data = json.loads(manifest.read_text())
+    data["metadata"]["requires_remotion"] = True
+    manifest.write_text(json.dumps(data))
+    environment = {"HOME": str(tmp_path), "PATH": os.defpath}
+    variants = _launch_worker_probe_environments((tmp_path,), environment, remotion_only=True)
+    native, = [v for v in variants if ASTRID_PACKS_PATH in v]
+    # A source-mode native worker carries the Runtime's import root (generic_host._dependency_pythonpath).
+    runtime_root = str(Path(runtime_protocol.__file__).resolve().parent.parent)
+    assert runtime_root in native["PYTHONPATH"].split(os.pathsep)
+
+
 def test_execution_profile_cannot_be_overridden_by_command_environment():
     from astrid.core.subprocess_env import SubprocessEnvPolicyError
 
