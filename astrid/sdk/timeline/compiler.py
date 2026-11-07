@@ -137,6 +137,8 @@ def compile_timing(inputs: TimingInputs) -> TimingResult:
                            inputs.legacy_declarations)
     except TimingCompileError:
         raise
-    except (ValueError, TypeError, KeyError, ZeroDivisionError, OverflowError) as exc:
+    except KeyError as exc:
+        raise TimingCompileError(f"invalid timing input: missing key {exc}") from exc
+    except (ValueError, TypeError, ZeroDivisionError, OverflowError) as exc:
         raise TimingCompileError(f"invalid timing input: {exc}") from exc
     return TimingResult(bundle, MappingProxyType(timings))

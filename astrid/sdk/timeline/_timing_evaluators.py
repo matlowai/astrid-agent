@@ -9,7 +9,7 @@ from astrid.core.timeline import moments as mo
 from astrid.core.timeline.authoring_bundle import _digest
 from astrid.sdk import timeline_intent as intent
 from astrid.sdk.media_transcript import SCHEMA, transcript_document_id
-from astrid.sdk.timeline._common import TimelineEditError
+from astrid.sdk.timeline._common import PARENT_SHOT, TimelineEditError
 from astrid.sdk.timeline.compiler import TimingCompileError, TimingCycleError
 from astrid.sdk.timeline.units import (
     _playback_rate,
@@ -86,6 +86,8 @@ class _ReadLookup(Checkout):
         self.bundle, self.fps = bundle, fps
 
     def _internal(self, shot_id):
+        if shot_id == PARENT_SHOT:
+            return self.bundle.get("parent") or {}
         return self.bundle["shots"][shot_id]["internal_timeline"]
 
 
@@ -316,6 +318,10 @@ def evaluate(bundle, sources, bindings, policy, legacy_declarations=()):
     by_clip = {(owner[1], owner[2]): owner for owner in clips if owner[1]}
     bases, local_groups, local_bases = {}, {}, {}
     for group in groups:
+        loose = sorted(c.id for c in group["clips"] if c.shot_id == PARENT_SHOT)
+        if loose:
+            raise TimingCompileError(f"cut {group['id']!r} (app.astrid.cut) is on parent clips {', '.join(loose)}; "
+                                     "named cuts are read only inside placed shots")
         if len({_cut_identity(bundle, c.shot_id) for c in group["clips"]}) != 1:
             raise TimingCompileError("ambiguous cut identity across occurrences")
         base = group["picture"] or min(group["clips"], key=lambda c: (c.start, c.id))
