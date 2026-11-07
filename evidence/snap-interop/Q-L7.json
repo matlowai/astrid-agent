@@ -1,0 +1,11 @@
+{
+ "id": "Q-L7",
+ "note": "Lab logs copied whole; local paths replaced by <lab>, <study>, <fork-work>.",
+ "sources": [
+  {
+   "source": "<lab>/logs/A2-source-setup-1.json",
+   "bytes": 1742,
+   "content": "{\n  \"active\": [\n    {\n      \"manifest_sha256\": \"3c8bdbf050d280709ffa1dd30bb87652b6803b150475ff30d4edee32cdb12203\",\n      \"pack_id\": \"editorial\",\n      \"pack_root\": \"<lab>/env/home/.local/share/astrid/packs/editorial/8d3115ee28ae0fba1a941383f607deb2f7f80092/editorial\",\n      \"pack_subpath\": \"editorial\",\n      \"repository\": \"<lab>/src/poms_packs\",\n      \"revision\": \"8d3115ee28ae0fba1a941383f607deb2f7f80092\",\n      \"source_kind\": \"managed\",\n      \"tree_sha256\": \"60b7f5586b9bd8b6cc45cec761fdbe2d60ca889be5e60e2bc4a254f80a972aae\"\n    },\n    {\n      \"manifest_sha256\": \"77f1a2871ecf23a0e05ed24ed8f68b14ebff5fc6f7cfa481d8ffd4955f010be6\",\n      \"pack_id\": \"understanding\",\n      \"pack_root\": \"<lab>/env/home/.local/share/astrid/packs/understanding/8d3115ee28ae0fba1a941383f607deb2f7f80092/understanding\",\n      \"pack_subpath\": \"understanding\",\n      \"repository\": \"<lab>/src/poms_packs\",\n      \"revision\": \"8d3115ee28ae0fba1a941383f607deb2f7f80092\",\n      \"source_kind\": \"managed\",\n      \"tree_sha256\": \"e1488a917fb7b608710ed86abfa3e91a4d79cfa11790fdc5d1b64ae2dcdbea54\"\n    },\n    {\n      \"manifest_sha256\": \"bc7dc7f3b5319dfeba9f41c2891c808465e9a32784d1499cde41e46a4a525e3f\",\n      \"pack_id\": \"youtube\",\n      \"pack_root\": \"<lab>/env/home/.local/share/astrid/packs/youtube/8d3115ee28ae0fba1a941383f607deb2f7f80092/youtube\",\n      \"pack_subpath\": \"youtube\",\n      \"repository\": \"<lab>/src/poms_packs\",\n      \"revision\": \"8d3115ee28ae0fba1a941383f607deb2f7f80092\",\n      \"source_kind\": \"managed\",\n      \"tree_sha256\": \"b301d66400063bebbf7cc51e26103d40a8742778a3bf4c62249343e543d3cb82\"\n    }\n  ],\n  \"changed\": true,\n  \"disabled\": [],\n  \"ok\": true,\n  \"source_inventory_identity\": \"d3f90a51e92acd23393ba84a53c70c743de648a179fc3fa22a66cf1a6e1ef3d3\"\n}\n"
+  }
+ ]
+}

@@ -1,0 +1,16 @@
+{
+ "id": "Q-L1",
+ "note": "Lab logs copied whole; local paths replaced by <lab>, <study>, <fork-work>.",
+ "sources": [
+  {
+   "source": "<study>/jam-gate-price/mcp/24-edit-title-dry.txt",
+   "bytes": 255,
+   "content": "these commit options require a media layer add, literal move or trim; other edits use a detached working copy. For a first clip: timelines edit TL --project P --add-layer media --layer-asset image.png --on 0 --for 3 --track V1 --idempotency-key KEY --json"
+  },
+  {
+   "source": "<study>/jam-gate-price/mcp/25-edit-title.txt",
+   "bytes": 255,
+   "content": "these commit options require a media layer add, literal move or trim; other edits use a detached working copy. For a first clip: timelines edit TL --project P --add-layer media --layer-asset image.png --on 0 --for 3 --track V1 --idempotency-key KEY --json"
+  }
+ ]
+}

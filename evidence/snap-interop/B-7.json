@@ -1,0 +1,21 @@
+{
+ "id": "B-7",
+ "note": "Lab logs copied whole; local paths replaced by <lab>, <study>, <fork-work>.",
+ "sources": [
+  {
+   "source": "<lab>/logs/A2-runtime-down.json",
+   "bytes": 104,
+   "content": "{\n  \"error\": \"_retire_host_locked() missing 1 required positional argument: 'support'\",\n  \"ok\": false\n}\n"
+  },
+  {
+   "source": "<fork-work>/logs/fix-runtime-down-before.log",
+   "bytes": 244,
+   "content": "FAILED tests/sdk/test_host_recovery.py::test_foreground_retirement_is_bound_to_locked_support[True]\nFAILED tests/sdk/test_host_recovery.py::test_runtime_shutdown_retires_the_registered_host_synchronously\n2 failed, 71 passed, 6 skipped in 8.16s\n"
+  },
+  {
+   "source": "<fork-work>/logs/fix-runtime-down-after.log",
+   "bytes": 40,
+   "content": "1 failed, 72 passed, 6 skipped in 8.28s\n"
+  }
+ ]
+}

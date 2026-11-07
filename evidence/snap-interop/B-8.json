@@ -1,0 +1,21 @@
+{
+ "id": "B-8",
+ "note": "Lab logs copied whole; local paths replaced by <lab>, <study>, <fork-work>.",
+ "sources": [
+  {
+   "source": "<lab>/logs/A2-render-2.json",
+   "bytes": 587,
+   "content": "unstructured - this is a bug.\nduplicate pack id/directory name 'editorial' across <lab>/env/home/.local/share/astrid/packs/editorial/8d3115ee28ae0fba1a941383f607deb2f7f80092/editorial and <lab>/env/home/Astrid/packs/editorial\nfix: retry the command; if it repeats, report this bug\nrecovery: retry the command; if it repeats, report this bug\nstate snapshot: {\"argv\": [\"timelines\", \"render\", \"lab-cut\", \"--project\", \"lab-interop\", \"--idempotency-key\", \"lab-render-2\", \"--timeout-seconds\", \"900\", \"--json\"], \"entrypoint\": \"astrid.core.gateway.main\", \"original_type\": \"PackValidationError\"}\n"
+  },
+  {
+   "source": "<fork-work>/logs/fix-remotion-launch-message-before.log",
+   "bytes": 788,
+   "content": "                raise RenderExportRefused(f\"render_export executor failed: {detail}\")\n>           raise RenderExportRefused(f\"render_export renderer failed: {exc}\") from exc\nE           astrid.packs.rendering.actions.render.task_adapter.RenderExportRefused: render_export renderer failed: executor 'training.pool_build' depends on unknown executor 'editorial.transcribe'\nFAILED tests/core/rendering/test_failure_message.py::test_launch_validation_drift_says_restart_the_host_not_npm_ci\nFAILED tests/packs/rendering/test_render_export_task_adapter.py::test_render_export_adapter_writes_real_mp4_and_is_callable\nFAILED tests/packs/rendering/test_render_export_task_adapter.py::test_launch_validation_missing_reference_does_not_spawn\n3 failed, 140 passed, 1 deselected, 67 warnings in 5.53s\n"
+  },
+  {
+   "source": "<fork-work>/logs/fix-remotion-launch-message-after.log",
+   "bytes": 552,
+   "content": "                raise RenderExportRefused(f\"render_export executor failed: {detail}\")\n>           raise RenderExportRefused(f\"render_export renderer failed: {exc}\") from exc\nE           astrid.packs.rendering.actions.render.task_adapter.RenderExportRefused: render_export renderer failed: executor 'training.pool_build' depends on unknown executor 'editorial.transcribe'\nFAILED tests/packs/rendering/test_render_export_task_adapter.py::test_render_export_adapter_writes_real_mp4_and_is_callable\n1 failed, 142 passed, 1 deselected, 67 warnings in 5.50s\n"
+  }
+ ]
+}

@@ -1,0 +1,21 @@
+{
+ "id": "Q-L3",
+ "note": "Lab logs copied whole; local paths replaced by <lab>, <study>, <fork-work>.",
+ "sources": [
+  {
+   "source": "<lab>/logs/protocol-v1/a5-real-delete-add-after-c2.json",
+   "bytes": 443,
+   "content": "{\"ok\": false, \"order\": \"delete-add-after:c2\", \"stage\": \"build_or_commit\", \"error\": \"CommitConflict\", \"message\": \"The timeline changed since this list was made; nothing was committed. created identity was already reserved. Someone else changed this timeline after your edit was made, so \\\"A5 same-id delete-add-after:c2\\\" was not committed. Your edit is saved as pc_ffff34f483ef; nothing is lost. Retry it with tl.retry(\\\"pc_ffff34f483ef\\\").\"}\n"
+  },
+  {
+   "source": "<lab>/logs/protocol-v1/a5-real-others.json",
+   "bytes": 286,
+   "content": "{\"ok\": false, \"order\": \"add-delete\", \"stage\": \"build_or_commit\", \"error\": \"CommandError\", \"message\": \"created identity is occupied\"}\n{\"ok\": false, \"order\": \"delete-add\", \"stage\": \"build_or_commit\", \"error\": \"CommandError\", \"message\": \"create-after requires one existing stable member\"}\n"
+  },
+  {
+   "source": "<lab>/logs/protocol-v1/a5-control-diffid.json",
+   "bytes": 228,
+   "content": "{\"ok\": true, \"dry_run\": false, \"base\": \"authoring-parent-revision-ab1fe8346bc52561a9368b874a09b9e3974c70fdda385e23100549ed76006cb3\", \"new_clip\": \"c3-r43bd9c31\", \"status\": \"accepted\", \"accepted_revision_id\": null, \"error\": null}\n"
+  }
+ ]
+}

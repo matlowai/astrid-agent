@@ -1,0 +1,26 @@
+{
+ "id": "B-1",
+ "note": "Lab logs copied whole; local paths replaced by <lab>, <study>, <fork-work>.",
+ "sources": [
+  {
+   "source": "<study>/jam-gate-price/mcp/33-relate-audio-take-f4b7392d.json",
+   "bytes": 912,
+   "content": "{\n \"jsonrpc\": \"2.0\",\n \"id\": 4,\n \"result\": {\n  \"content\": [\n   {\n    \"type\": \"text\",\n    \"text\": \"unstructured - this is a bug.\\nRemoteMedia.relate() got an unexpected keyword argument 'relations'\\nfix: retry the command; if it repeats, report this bug\\nrecovery: retry the command; if it repeats, report this bug\\nstate snapshot: {\\\"argv\\\": [\\\"media\\\", \\\"relate\\\", \\\"--project\\\", \\\"gate-price-jam\\\", \\\"--from\\\", \\\"sha256:29685c6f71e8a93462dacd169b61f87401af7f30c6c366a70d0343176a1562a6\\\", \\\"--to\\\", \\\"sha256:cc18ea6e09fd0e873b60610285f2000318a8f6468037c4733acdc30e963758c5\\\", \\\"--kind\\\", \\\"audio_for\\\", \\\"--metadata\\\", \\\"{\\\\\\\"snap\\\\\\\": {\\\\\\\"note\\\\\\\": \\\\\\\"the take's own H3 sound, split out so Astrid can see the words\\\\\\\"}}\\\", \\\"--idempotency-key\\\", \\\"jam-gp-rel-audio-take-f4b7392d\\\", \\\"--json\\\"], \\\"entrypoint\\\": \\\"astrid.core.gateway.main\\\", \\\"original_type\\\": \\\"TypeError\\\"}\"\n   }\n  ],\n  \"isError\": true\n }\n}"
+  },
+  {
+   "source": "<study>/jam-gate-price/mcp/33-relate-derived-take-753ad7b5.json",
+   "bytes": 793,
+   "content": "{\n \"jsonrpc\": \"2.0\",\n \"id\": 7,\n \"result\": {\n  \"content\": [\n   {\n    \"type\": \"text\",\n    \"text\": \"unstructured - this is a bug.\\nRemoteMedia.relate() got an unexpected keyword argument 'relations'\\nfix: retry the command; if it repeats, report this bug\\nrecovery: retry the command; if it repeats, report this bug\\nstate snapshot: {\\\"argv\\\": [\\\"media\\\", \\\"relate\\\", \\\"--project\\\", \\\"gate-price-jam\\\", \\\"--from\\\", \\\"sha256:dfc6859d6be9d47b40a1afe92fe4b57ab20197bd4fa87f613a6ca5c384313cf8\\\", \\\"--to\\\", \\\"sha256:a02ee4756ac5121bdc0167a30e0c2f1968415cafa7962adbfc11ab42f58ab90f\\\", \\\"--kind\\\", \\\"derived_from\\\", \\\"--idempotency-key\\\", \\\"jam-gp-rel-derived-take-753ad7b5\\\", \\\"--json\\\"], \\\"entrypoint\\\": \\\"astrid.core.gateway.main\\\", \\\"original_type\\\": \\\"TypeError\\\"}\"\n   }\n  ],\n  \"isError\": true\n }\n}"
+  },
+  {
+   "source": "<fork-work>/logs/fix-media-relate-before.log",
+   "bytes": 436,
+   "content": "=========================== short test summary info ============================\nFAILED tests/stage1/test_runtime_client_cutover.py::test_editor_domain_reads_and_media_relations_use_generated_operations\n1 failed in 1.26s\n=========================== short test summary info ============================\nFAILED tests/v10/test_domain_cli_media_references.py::test_media_relate_is_one_sdk_call_with_frozen_kind\n1 failed, 52 passed in 0.31s\n"
+  },
+  {
+   "source": "<fork-work>/logs/fix-media-relate-after.log",
+   "bytes": 274,
+   "content": ".                                                                        [100%]\n1 passed in 1.33s\n  DESELECTED tests/stage1/test_runtime_client_cutover.py::test_shot_items_and_reference_associations_use_versioned_routes_and_survive_restart\n53 passed, 39 deselected in 0.50s\n"
+  }
+ ]
+}
