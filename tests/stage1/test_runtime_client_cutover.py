@@ -797,9 +797,12 @@ def test_editor_domain_reads_and_media_relations_use_generated_operations(tmp_pa
             to_object_id=second["object_id"],
             kind="derived_from",
             metadata={"source": "test"},
+            ordinal=2,
             idempotency_key="relation",
         )
-        assert relation.ok and client.media.list_relations(project_id).data[0][0]["kind"] == "derived_from"
+        assert relation.ok
+        stored = client.media.list_relations(project_id).data[0][0]
+        assert stored["kind"] == "derived_from" and stored["ordinal"] == 2
 
         shot_result = client.shots.create(project=project_id, name="Shot", idempotency_key="shot")
         reference_result = client.references.create(project=project_id, reference_id="reference", kind="character", name="Reference", media_id=first["object_id"], idempotency_key="reference")

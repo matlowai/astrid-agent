@@ -217,18 +217,13 @@ def _cmd_verify(parsed: argparse.Namespace) -> int:
 
 
 def _cmd_relate(parsed: argparse.Namespace) -> int:
-    relation: dict[str, Any] = {
-        "from_media_id": parsed.from_media,
-        "to_media_id": parsed.to_media,
-        "kind": parsed.kind,
-    }
-    if parsed.ordinal is not None:
-        relation["ordinal"] = parsed.ordinal
-    if parsed.metadata is not None:
-        relation["metadata"] = parsed.metadata
     result = parsed.client.media.relate(
         parsed.project,
-        relations=[relation],
+        from_object_id=parsed.from_media,
+        to_object_id=parsed.to_media,
+        kind=parsed.kind,
+        metadata=parsed.metadata,
+        ordinal=parsed.ordinal,
         idempotency_key=parsed.idempotency_key,
     )
     return print_result(result, as_json=parsed.json)
@@ -381,7 +376,7 @@ def _configure_relate(subparser: argparse.ArgumentParser) -> None:
     subparser.add_argument(
         "--ordinal",
         type=int,
-        default=None,
+        default=0,
         help="Optional edge ordinal (default: 0).",
     )
     subparser.add_argument(

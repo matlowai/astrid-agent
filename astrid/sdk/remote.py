@@ -1966,7 +1966,7 @@ class RemoteMedia(_RemoteFamily):
         if not scoped.ok: return scoped
         result = self._typed("head_object", ref, key=idempotency_key)
         return DomainResult.success({"verified": True, "object_id": str(ref)}, idempotency_key=result.idempotency_key) if result.ok else result
-    def relate(self, project, *, from_object_id: str, to_object_id: str, kind: str, metadata=None, idempotency_key=None):
+    def relate(self, project, *, from_object_id: str, to_object_id: str, kind: str, metadata=None, ordinal: int = 0, idempotency_key=None):
         key = idempotency_key or uuid.uuid4().hex
         return self._typed(
             "create_media_relation",
@@ -1976,6 +1976,7 @@ class RemoteMedia(_RemoteFamily):
             kind,
             key=key,
             metadata=metadata,
+            ordinal=ordinal,
             idempotency_key=key,
         )
 

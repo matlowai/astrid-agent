@@ -888,6 +888,7 @@ class WorkspaceClient:
         kind: str,
         *,
         metadata: Mapping[str, Any] | None = None,
+        ordinal: int = 0,
         idempotency_key: str,
     ) -> Any:
         return self._call_generated(
@@ -897,6 +898,7 @@ class WorkspaceClient:
             to_object_id,
             kind,
             metadata=metadata,
+            ordinal=ordinal,
             idempotency_key=idempotency_key,
         )
 
