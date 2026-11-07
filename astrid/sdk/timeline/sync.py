@@ -722,7 +722,7 @@ class TimelineSession:
 
     def replace_media(self, clip_id, source, *, expected_head=None, generation=None,
                       idempotency_key=None, dry_run=False, via='python'):
-        """Replace a parent clip's media in its slot; the new clip id is ``<old>-r<8 hex>``."""
+        """Re-take a parent clip in place: swap its media, keep its id and slot."""
         from .media_add import replace_media
 
         return replace_media(self, clip_id, source, expected_head=expected_head, generation=generation,

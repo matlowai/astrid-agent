@@ -327,7 +327,7 @@ def dispatch_ordinary_edit(parsed):
 
 
 def replace_clip_media(parsed):
-    """``timelines replace-clip-media``: one parent clip's new media, in its slot, in one commit."""
+    """``timelines replace-clip-media``: one parent clip's media swapped in place, in one commit."""
     return commit_edit(parsed, edit=lambda session, parsed, options: session.replace_media(
         parsed.clip, parsed.file, expected_head=parsed.expected_head, generation=parsed.generation, **options))
 
