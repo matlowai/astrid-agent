@@ -29,7 +29,7 @@ from astrid.installer.service import LABEL
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = Path("astrid/core/timeline/schema/timeline-config.schema.json")
-PRODUCER = "9fc53b771134940aaac901e4cfc5d03c1db1a20a"
+PRODUCER = json.loads((ROOT / "runtime.lock.json").read_text())["source_commit"]
 SCHEMA_SHA256 = "f870150ffd0e42365c048965e2f7c08efc959c36db76ed4cba59de2e58ab4e08"
 pytestmark = pytest.mark.linux_native
 
@@ -390,9 +390,17 @@ print(json.dumps(rejected))
     assert not (state.root / "update-transaction.json").exists()
 
 
-def test_stage_umask_0002_keeps_guarded_inputs_private(staged_installer):
+def test_stage_umask_0002_keeps_guarded_inputs_private(staged_installer, tmp_path):
     if not os.environ.get("ASTRID_TEST_UMASK_CHILD"):
-        pytest.skip("exercised by isolated umask subprocess")
+        # Run this same test again in a child whose umask is 0002.
+        env = {**os.environ, "ASTRID_TEST_UMASK_CHILD": "1"}
+        result = subprocess.run([sys.executable, "-m", "pytest", "-p", "no:cacheprovider",
+                                 "--basetemp", str(tmp_path / "child"),
+                                 __file__ + "::test_stage_umask_0002_keeps_guarded_inputs_private"],
+                                cwd=ROOT, env=env, capture_output=True, text=True,
+                                preexec_fn=lambda: os.umask(0o002), timeout=180)
+        assert result.returncode == 0, result.stdout + result.stderr
+        return
     from astrid.core.rendering._local_schema import READER_INPUTS
     state = staged_installer
     source_before = {p: (p.read_bytes(), p.stat().st_mode) for p in
@@ -410,18 +418,6 @@ def test_stage_umask_0002_keeps_guarded_inputs_private(staged_installer):
     assert {p: (p.read_bytes(), p.stat().st_mode) for p in source_before} == source_before
     assert state.backend._verify_local_timeline_schema(state.product_root) == state.product_root / SCHEMA
     assert version.profile.exists()
-
-
-def test_stage_umask_0002_subprocess(tmp_path):
-    if os.environ.get("ASTRID_TEST_UMASK_CHILD"):
-        pytest.skip("parent only")
-    env = {**os.environ, "ASTRID_TEST_UMASK_CHILD": "1"}
-    result = subprocess.run([sys.executable, "-m", "pytest", "-p", "no:cacheprovider",
-                             "--basetemp", str(tmp_path / "child"),
-                             __file__ + "::test_stage_umask_0002_keeps_guarded_inputs_private"],
-                            cwd=ROOT, env=env, capture_output=True, text=True,
-                            preexec_fn=lambda: os.umask(0o002), timeout=180)
-    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_stage_rejects_foreign_guarded_directory_before_declaration(staged_installer):
