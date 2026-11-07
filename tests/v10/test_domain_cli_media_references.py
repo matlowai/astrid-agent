@@ -16,6 +16,7 @@ its nested references mount) through the product boundary.
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import types
 from typing import Any, cast
@@ -30,6 +31,7 @@ from astrid.core.cli.domain_product import (
 )
 from astrid.core.receipts.contract import CommandReceipt
 from astrid.sdk.contracts import DomainResult, ErrorObject
+from astrid.sdk.remote import RemoteMedia
 
 ENVELOPE_KEYS = {"ok", "data", "error", "receipt", "idempotency_key"}
 
@@ -145,20 +147,11 @@ class _RecordingMedia:
             idempotency_key=key,
         )
 
-    def relate(self, project, *, relations, idempotency_key=None):
-        self._owner.calls.append(
-            (
-                "media.relate",
-                {
-                    "project": project,
-                    "relations": list(relations),
-                    "idempotency_key": idempotency_key,
-                },
-            )
-        )
-        key = idempotency_key or "generated-key"
+    def relate(self, project, **kwargs):
+        self._owner.calls.append(("media.relate", {"project": project, **kwargs}))
+        key = kwargs.get("idempotency_key") or "generated-key"
         return DomainResult.success(
-            {"relations": [dict(r) for r in relations]},
+            {"kind": kwargs.get("kind")},
             receipt=_receipt("core.media.relate", key),
             idempotency_key=key,
         )
@@ -711,17 +704,15 @@ def test_media_relate_is_one_sdk_call_with_frozen_kind(capsys) -> None:
     assert verb == "media.relate"
     assert kwargs == {
         "project": "demo",
-        "relations": [
-            {
-                "from_media_id": "M-1",
-                "to_media_id": "M-2",
-                "kind": "variant_of",
-                "ordinal": 0,
-                "metadata": {"note": "v2"},
-            }
-        ],
+        "from_object_id": "M-1",
+        "to_object_id": "M-2",
+        "kind": "variant_of",
+        "ordinal": 0,
+        "metadata": {"note": "v2"},
         "idempotency_key": None,
     }
+    # The recorded call must also be accepted by the real SDK method.
+    inspect.signature(RemoteMedia.relate).bind(None, **kwargs)
     envelope = json.loads(capsys.readouterr().out)
     assert envelope["ok"] is True
     assert envelope["receipt"]["command_kind"] == "core.media.relate"
