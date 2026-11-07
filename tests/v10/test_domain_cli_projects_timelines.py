@@ -2770,3 +2770,15 @@ def test_projects_list_default_matches_explicit_json(capsys) -> None:
     envelope = json.loads(capsys.readouterr().out)
     assert envelope["ok"] is True
     assert envelope["data"] == [{"slug": "demo", "name": "Demo"}]
+
+
+def test_a_trim_refused_by_an_open_working_copy_says_how_to_clear_it(capsys, monkeypatch, tmp_path) -> None:
+    from astrid.sdk.timeline import store
+
+    monkeypatch.setattr(store, "find_draft", lambda project, ref, name=None, *, client=None: tmp_path / "main.json")
+    rc = _run("timelines", ["edit", "main", "--project", "demo", "--clip", "c1", "--trim-in", "0.2", "--json"])
+    assert rc == 2
+    out = capsys.readouterr()
+    text = out.out + out.err
+    assert "a working copy of main is open" in text
+    assert "astrid timelines discard main --project demo" in text

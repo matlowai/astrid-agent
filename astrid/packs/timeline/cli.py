@@ -2812,6 +2812,14 @@ def _cmd_edit(parsed: argparse.Namespace) -> int:
     if result is not NotImplemented:
         return result
     if parsed.dry_run or parsed.idempotency_key or parsed.json:
+        from astrid.sdk.timeline import store
+
+        if parsed.ref and parsed.client is not None and not parsed.file and not parsed.draft \
+                and store.find_draft(parsed.project, parsed.ref, client=parsed.client) is not None:
+            raise _VerbError(f"a working copy of {parsed.ref} is open (an earlier detached edit, or `timelines words` "
+                             "or `lines` read without --published), so trims, moves and media adds go to it, where "
+                             "these commit options don't apply. Commit it, or drop it with "
+                             f"`astrid timelines discard {parsed.ref} --project {parsed.project}`, then retry", 2)
         raise _VerbError("these commit options require a media layer add, literal move or trim; "
                          "other edits use a detached working copy. For a first clip: "
                          "timelines edit TL --project P --add-layer media --layer-asset image.png "
