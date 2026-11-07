@@ -96,7 +96,7 @@ def _commit_envelope(raw: Mapping[str, object], key: str) -> DomainResult:
                 # ``TimelineSession.flush`` adds these presentation fields
                 # after Runtime's canonical result is sealed in the receipt.
                 for field in ("accepted_publication_id", "show_command", "summary", "undo",
-                              "replayed", "confirmed", "attempts"):
+                              "replayed", "confirmed", "attempts", "replaced"):
                     if field in data:
                         enriched[field] = data[field]
             data = enriched
@@ -324,6 +324,12 @@ def dispatch_ordinary_edit(parsed):
         if result is not NotImplemented:
             return result
     return NotImplemented
+
+
+def replace_clip_media(parsed):
+    """``timelines replace-clip-media``: one parent clip's new media, in its slot, in one commit."""
+    return commit_edit(parsed, edit=lambda session, parsed, options: session.replace_media(
+        parsed.clip, parsed.file, expected_head=parsed.expected_head, generation=parsed.generation, **options))
 
 
 def commit_add_media(session, parsed, options):

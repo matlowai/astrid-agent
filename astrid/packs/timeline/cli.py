@@ -33,6 +33,8 @@ parallel product store):
 - ``show`` — the Runtime-owned bounded current-head inspection by UUID, ULID,
   or slug; ``--summary`` is retained as a presentation spelling and never
   exposes the legacy document;
+- ``replace-clip-media`` — re-take one parent clip in its slot through the
+  durable timeline session (new clip id ``<clip>-r<8 hex>``);
 - ``replace-parent-media`` — replace one selected clip in the canonical
   parent-composition closure through ``client.timelines.replace_parent_media``;
 - ``archive`` — reversible event-backed ``client.timelines.archive``;
@@ -2332,6 +2334,13 @@ def _cmd_render(parsed: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_replace_clip_media(parsed: argparse.Namespace) -> int:
+    """Re-take one parent clip through the durable timeline session."""
+    from astrid.packs.timeline.cli_native import replace_clip_media
+
+    return replace_clip_media(parsed)
+
+
 def _cmd_commit(parsed: argparse.Namespace) -> int:
     """Commit one detached document through the existing Runtime commit door."""
     from astrid.packs.timeline.cli_native import commit_document
@@ -3316,6 +3325,7 @@ _core_timelines.provide_handlers({
     '_cmd_recover': _cmd_recover,
     '_cmd_redo': _cmd_redo,
     '_cmd_render': _cmd_render,
+    '_cmd_replace_clip_media': _cmd_replace_clip_media,
     '_cmd_replace_parent_media': _cmd_replace_parent_media,
     '_cmd_script': _cmd_script,
     '_cmd_show': _cmd_show,

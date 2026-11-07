@@ -85,6 +85,7 @@ _cmd_recover = _provided('_cmd_recover')
 _cmd_redo = _provided('_cmd_redo')
 _cmd_render = _provided('_cmd_render')
 _cmd_replace_parent_media = _provided('_cmd_replace_parent_media')
+_cmd_replace_clip_media = _provided('_cmd_replace_clip_media')
 _cmd_script = _provided('_cmd_script')
 _cmd_show = _provided('_cmd_show')
 _cmd_status = _provided('_cmd_status')
@@ -109,7 +110,7 @@ _working_cmd_restructure = _provided('_working_cmd_restructure')
 _working_cmd_transcripts_sync = _provided('_working_cmd_transcripts_sync')
 _working_cmd_words = _provided('_working_cmd_words')
 
-_HANDLER_NAMES = frozenset({'_as_timeline_verb', '_cmd_apply', '_cmd_archive', '_cmd_assets', '_cmd_check', '_cmd_checkout', '_cmd_commit', '_cmd_create', '_cmd_diff', '_cmd_edit', '_cmd_elements', '_cmd_export', '_cmd_history', '_cmd_import', '_cmd_inspect', '_cmd_list', '_cmd_place_element', '_cmd_recover', '_cmd_redo', '_cmd_render', '_cmd_replace_parent_media', '_cmd_script', '_cmd_show', '_cmd_status', '_cmd_undo', '_cmd_update_element', '_cmd_visualize', '_find_run_find', '_guarded', '_log_run_log', '_pending_cmd_drop', '_pending_cmd_list', '_pending_cmd_retry', '_pending_cmd_show', '_pending_run', '_with_steps', '_working_cmd_discard', '_working_cmd_duplicate', '_working_cmd_lines', '_working_cmd_lint', '_working_cmd_rename', '_working_cmd_restructure', '_working_cmd_transcripts_sync', '_working_cmd_words'})
+_HANDLER_NAMES = frozenset({'_as_timeline_verb', '_cmd_apply', '_cmd_archive', '_cmd_assets', '_cmd_check', '_cmd_checkout', '_cmd_commit', '_cmd_create', '_cmd_diff', '_cmd_edit', '_cmd_elements', '_cmd_export', '_cmd_history', '_cmd_import', '_cmd_inspect', '_cmd_list', '_cmd_place_element', '_cmd_recover', '_cmd_redo', '_cmd_render', '_cmd_replace_clip_media', '_cmd_replace_parent_media', '_cmd_script', '_cmd_show', '_cmd_status', '_cmd_undo', '_cmd_update_element', '_cmd_visualize', '_find_run_find', '_guarded', '_log_run_log', '_pending_cmd_drop', '_pending_cmd_list', '_pending_cmd_retry', '_pending_cmd_show', '_pending_run', '_with_steps', '_working_cmd_discard', '_working_cmd_duplicate', '_working_cmd_lines', '_working_cmd_lint', '_working_cmd_rename', '_working_cmd_restructure', '_working_cmd_transcripts_sync', '_working_cmd_words'})
 
 
 def _add_idempotency_key(subparser: argparse.ArgumentParser) -> None:
@@ -915,6 +916,25 @@ def _configure_replace_parent_media(subparser: argparse.ArgumentParser) -> None:
     subparser.set_defaults(handler=_cmd_replace_parent_media)
 
 
+def _configure_replace_clip_media(subparser: argparse.ArgumentParser) -> None:
+    subparser.description = ("Re-take one parent clip: its new media takes the same slot, track, timing and label "
+                             "in one commit. Clip ids are single-use, so the new clip is <clip>-r<8 hex>; "
+                             "the answer names both.")
+    _add_project_arg(subparser)
+    subparser.add_argument("ref", help="Timeline UUID, ULID, or slug.")
+    subparser.add_argument("--clip", required=True, help="Parent clip id to re-take.")
+    subparser.add_argument("--file", required=True, metavar="FILE|HANDLE|KEY",
+                           help="New media: a local file, project media (sha256:..., run:...) or a registry key.")
+    subparser.add_argument("--expected-head", required=True,
+                           help="Revision id you read; a different head fails before any import or write.")
+    subparser.add_argument("--generation", type=_parse_json_object, default=None,
+                           help="Replace the clip's generation record with this JSON object.")
+    subparser.add_argument("--dry-run", action="store_true", help="Preview without accepting a publication.")
+    _add_idempotency_key(subparser)
+    _add_json_flag(subparser)
+    subparser.set_defaults(handler=_cmd_replace_clip_media)
+
+
 def _configure_script(subparser: argparse.ArgumentParser) -> None:
     _add_project_arg(subparser, required=False)
     subparser.add_argument("ref", nargs="?", default=None)
@@ -1521,6 +1541,11 @@ COMMANDS: tuple[CommandSpec, ...] = (
     CommandSpec("update-element",help="Update the same parent effect from an admitted file pack using exact-head CAS.",configure=_configure_update_element),
     CommandSpec("place-element",help="Place an admitted effect on an am-discord occurrence shot clip using exact-head CAS.",configure=_configure_place_element),
     CommandSpec(
+        "replace-clip-media",
+        help="Re-take one parent clip with new media in the same slot (new clip id <clip>-r<8 hex>).",
+        configure=_configure_replace_clip_media,
+    ),
+    CommandSpec(
         "replace-parent-media",
         help="Atomically replace one clip in an exact canonical parent-composition closure.",
         configure=_configure_replace_parent_media,
@@ -1602,7 +1627,7 @@ def build_parser(client: Any) -> argparse.ArgumentParser:
     parser = _parser_TimelinesParser(
         prog="astrid timelines",
         description=(
-            "Timeline check/create/list/show/script/replace-parent-media/archive/recover/history/log/diff/visualize/lint/render/lines/words/discard/pending/retry/duplicate "
+            "Timeline check/create/list/show/script/replace-clip-media/replace-parent-media/archive/recover/history/log/diff/visualize/lint/render/lines/words/discard/pending/retry/duplicate "
             "(product family); nested shots beneath 'timelines shots'."
         ),
     )

@@ -7,6 +7,8 @@ import uuid
 from collections.abc import Mapping
 from pathlib import Path
 
+from astrid.core.timeline.duration import clip_timeline_duration
+
 from ._command_state import State
 from ._common import TimelineEditError
 from ._recording import active
@@ -185,3 +187,64 @@ def add_media(session, source, *, on, duration, track, clip_id, values,
         session.outbox.write(state)
     return session.commit_many(commands, idempotency_key=idempotency_key, dry_run=dry_run,
                                via=via, verified_media=[verified], label='Add media')
+
+
+def replace_media(session, clip_id, source, *, expected_head, generation, idempotency_key, dry_run, via):
+    """Replace one parent clip's media in its slot: a new clip, then the old one deleted, in one commit.
+
+    Runtime clip ids are single-use per timeline history, so the new clip is ``<old>-r<8 hex of the media>``.
+    It keeps the old clip's track, timing, label and other fields; ``generation`` replaces the old one when given.
+    """
+    from .native_parent_media_commands import capture_clip_replace_media
+
+    if idempotency_key is not None and (not isinstance(idempotency_key, str) or not idempotency_key.strip()):
+        raise TimelineEditError('idempotency key must be nonempty')
+    intent = {'replace': clip_id, 'source': dict(source) if isinstance(source, Mapping) else str(source),
+              'expected_head': expected_head, 'generation': copy.deepcopy(generation)}
+    with session.outbox.locked():
+        state = session._state()
+    previous = state.get('acknowledged', {}).get(idempotency_key)
+    if previous is not None:
+        return session.retry(idempotency_key, matches=lambda _: previous.get('media_input') == intent,
+                             dry_run=dry_run, via=via)
+    if state['pending'] or state['flight'] is not None:
+        if state.get('media_input') != intent:
+            raise TimelineEditError('pending intent differs; retry the original edit and key first')
+        return session.flush(idempotency_key=idempotency_key, dry_run=dry_run, via=via)
+    head = state['base']['revision_id']
+    if expected_head is not None and head != expected_head:
+        raise TimelineEditError(f'the timeline head is {head}, not {expected_head}; read the timeline again first')
+
+    bundle = session._bundle(state)
+    target = 'parent/clip:' + clip_id
+    old = State(bundle).entity(target, optional=True)
+    if not isinstance(old, Mapping):
+        raise TimelineEditError(f'no parent clip {clip_id!r} in this timeline')
+    local_source = not isinstance(source, Mapping) and Path(source).expanduser().is_file()
+    pin, verified = _selection(session, bundle, source)
+    row = {key: copy.deepcopy(value) for key, value in old.items() if key != 'asset'}
+    if row.get('hold') is None:
+        row['hold'] = clip_timeline_duration(old)
+    row.update(id=f"{clip_id}-r{pin['object_id'].removeprefix('sha256:')[:8]}", asset=pin['asset'])
+    if generation is not None:
+        row['generation'] = copy.deepcopy(generation)
+    commands = capture_clip_replace_media(bundle, target, row, pin, verified_media=[verified])
+    imports = ([{
+        'object_id': pin['object_id'],
+        'generation_id': pin['generation_id'],
+        'variant_id': pin['variant_id'],
+        'catalog_write': True,
+        'retained_on_undo': True,
+    }] if local_source else [])
+    with session.outbox.locked():
+        if session._state() != state:
+            raise TimelineEditError('outbox changed during capture; retry the original edit first')
+        state['media_input'] = copy.deepcopy(intent)
+        if imports:
+            state['media_imports'] = copy.deepcopy(imports)
+        else:
+            state.pop('media_imports', None)
+        session.outbox.write(state)
+    result = session.commit_many(commands, idempotency_key=idempotency_key, dry_run=dry_run,
+                                 via=via, verified_media=[verified], label=f'Replace media of {clip_id}')
+    return {**result, 'data': {**(result.get('data') or {}), 'replaced': {'old_clip': clip_id, 'new_clip': row['id']}}}

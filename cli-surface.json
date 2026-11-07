@@ -2735,6 +2735,38 @@
           ],
           "verbs": {}
         },
+        "replace-clip-media": {
+          "flags": {
+            "--clip": {
+              "required": true
+            },
+            "--dry-run": {
+              "required": false
+            },
+            "--expected-head": {
+              "required": true
+            },
+            "--file": {
+              "required": true
+            },
+            "--generation": {
+              "required": false
+            },
+            "--idempotency-key": {
+              "required": false
+            },
+            "--json": {
+              "required": false
+            },
+            "--project": {
+              "required": true
+            }
+          },
+          "positionals": [
+            "ref"
+          ],
+          "verbs": {}
+        },
         "replace-parent-media": {
           "flags": {
             "--clip-id": {

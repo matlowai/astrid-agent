@@ -720,6 +720,14 @@ class TimelineSession:
         return add_media(self, source, on=on, duration=duration, track=track, clip_id=clip_id,
                          values=values, idempotency_key=idempotency_key, dry_run=dry_run, via=via)
 
+    def replace_media(self, clip_id, source, *, expected_head=None, generation=None,
+                      idempotency_key=None, dry_run=False, via='python'):
+        """Replace a parent clip's media in its slot; the new clip id is ``<old>-r<8 hex>``."""
+        from .media_add import replace_media
+
+        return replace_media(self, clip_id, source, expected_head=expected_head, generation=generation,
+                             idempotency_key=idempotency_key, dry_run=dry_run, via=via)
+
     def retry(self, key, *, matches, dry_run=False, via='python'):
         """Replay an exact keyed request or resend its durable unknown-outcome flight.
 
