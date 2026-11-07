@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import mimetypes
+import tempfile
 import uuid
 from collections.abc import Mapping
 from pathlib import Path
-
-from astrid.core.timeline.duration import clip_timeline_duration
 
 from ._command_state import State
 from ._common import TimelineEditError
@@ -190,12 +190,12 @@ def add_media(session, source, *, on, duration, track, clip_id, values,
 
 
 def replace_media(session, clip_id, source, *, expected_head, generation, idempotency_key, dry_run, via):
-    """Replace one parent clip's media in its slot: a new clip, then the old one deleted, in one commit.
+    """Re-take one parent clip in place: its media is swapped (clip.swap-media) and the clip keeps its id and slot.
 
-    Runtime clip ids are single-use per timeline history, so the new clip is ``<old>-r<8 hex of the media>``.
-    It keeps the old clip's track, timing, label and other fields; ``generation`` replaces the old one when given.
+    No clip is deleted, so other clips' declared intent (words, segments) does not block it. ``generation``
+    replaces the clip's generation record in the same commit when given.
     """
-    from .native_parent_media_commands import capture_clip_replace_media
+    from .native_occurrence_media_commands import capture_parent_swap_media
 
     if idempotency_key is not None and (not isinstance(idempotency_key, str) or not idempotency_key.strip()):
         raise TimelineEditError('idempotency key must be nonempty')
@@ -221,14 +221,36 @@ def replace_media(session, clip_id, source, *, expected_head, generation, idempo
     if not isinstance(old, Mapping):
         raise TimelineEditError(f'no parent clip {clip_id!r} in this timeline')
     local_source = not isinstance(source, Mapping) and Path(source).expanduser().is_file()
+    entry = State(bundle).registry('parent').get('assets', {}).get(old['asset']) or {}
+    if entry.get('generationId'):
+        was, was_verified = _selection(session, bundle, old['asset'])
+    else:
+        # An archive import's asset has no catalog variant; admit its own bytes so the swap can name it.
+        from astrid.sdk.media_open import _find_project_object, _read_bytes
+
+        transport = session.client._remote._transport
+        record, failure = _find_project_object(transport, session.project_id, entry['media_id'])
+        if failure is None:
+            data, failure = _read_bytes(transport, entry['media_id'])
+        if failure is not None:
+            raise TimelineEditError(f'cannot read the current media of {clip_id!r}: {failure.error.message}')
+        with tempfile.TemporaryDirectory(prefix='astrid-retake-') as scratch:
+            suffix = mimetypes.guess_extension(str(record.get('media_type') or ''), strict=False) or ''
+            current = Path(scratch) / (entry['media_id'].removeprefix('sha256:')[:16] + suffix)
+            current.write_bytes(data)
+            was, was_verified = _selection(session, bundle, str(current))
     pin, verified = _selection(session, bundle, source)
-    row = {key: copy.deepcopy(value) for key, value in old.items() if key != 'asset'}
-    if row.get('hold') is None:
-        row['hold'] = clip_timeline_duration(old)
-    row.update(id=f"{clip_id}-r{pin['object_id'].removeprefix('sha256:')[:8]}", asset=pin['asset'])
-    if generation is not None:
-        row['generation'] = copy.deepcopy(generation)
-    commands = capture_clip_replace_media(bundle, target, row, pin, verified_media=[verified])
+    commands, verified_media = [], []
+    if pin['object_id'] != was['object_id']:
+        commands.append(capture_parent_swap_media(bundle, target, was, pin, verified_media=[was_verified, verified]))
+        verified_media = [was_verified, verified]
+    if generation is not None and generation != old.get('generation'):
+        path = ['clips', 'id:' + clip_id, 'generation']
+        before = {'state': 'present', 'value': copy.deepcopy(old['generation'])} if 'generation' in old else {'state': 'absent'}
+        commands.append({'schema_version': 1, 'op': 'doc.patch', 'version': '1', 'select': None, 'args': {
+            'changes': [{'op': 'set', 'ref': 'parent', 'path': path, 'before': before, 'value': copy.deepcopy(generation)}]}})
+    if not commands:
+        raise TimelineEditError(f'clip {clip_id!r} already has this media and generation')
     imports = ([{
         'object_id': pin['object_id'],
         'generation_id': pin['generation_id'],
@@ -246,5 +268,6 @@ def replace_media(session, clip_id, source, *, expected_head, generation, idempo
             state.pop('media_imports', None)
         session.outbox.write(state)
     result = session.commit_many(commands, idempotency_key=idempotency_key, dry_run=dry_run,
-                                 via=via, verified_media=[verified], label=f'Replace media of {clip_id}')
-    return {**result, 'data': {**(result.get('data') or {}), 'replaced': {'old_clip': clip_id, 'new_clip': row['id']}}}
+                                 via=via, verified_media=verified_media, label=f'Re-take {clip_id}')
+    replaced = {'clip': clip_id, 'old_media': was['object_id'], 'new_media': pin['object_id']}
+    return {**result, 'data': {**(result.get('data') or {}), 'replaced': replaced}}

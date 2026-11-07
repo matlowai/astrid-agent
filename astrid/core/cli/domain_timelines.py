@@ -917,9 +917,8 @@ def _configure_replace_parent_media(subparser: argparse.ArgumentParser) -> None:
 
 
 def _configure_replace_clip_media(subparser: argparse.ArgumentParser) -> None:
-    subparser.description = ("Re-take one parent clip: its new media takes the same slot, track, timing and label "
-                             "in one commit. Clip ids are single-use, so the new clip is <clip>-r<8 hex>; "
-                             "the answer names both.")
+    subparser.description = ("Re-take one parent clip in place: its media is swapped and it keeps its id, slot, "
+                             "label and other fields, in one commit. The new media must cover the clip's source window.")
     _add_project_arg(subparser)
     subparser.add_argument("ref", help="Timeline UUID, ULID, or slug.")
     subparser.add_argument("--clip", required=True, help="Parent clip id to re-take.")
@@ -1542,7 +1541,7 @@ COMMANDS: tuple[CommandSpec, ...] = (
     CommandSpec("place-element",help="Place an admitted effect on an am-discord occurrence shot clip using exact-head CAS.",configure=_configure_place_element),
     CommandSpec(
         "replace-clip-media",
-        help="Re-take one parent clip with new media in the same slot (new clip id <clip>-r<8 hex>).",
+        help="Re-take one parent clip in place: swap its media, keep its id and slot.",
         configure=_configure_replace_clip_media,
     ),
     CommandSpec(

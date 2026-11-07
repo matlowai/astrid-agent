@@ -33,8 +33,8 @@ parallel product store):
 - ``show`` — the Runtime-owned bounded current-head inspection by UUID, ULID,
   or slug; ``--summary`` is retained as a presentation spelling and never
   exposes the legacy document;
-- ``replace-clip-media`` — re-take one parent clip in its slot through the
-  durable timeline session (new clip id ``<clip>-r<8 hex>``);
+- ``replace-clip-media`` — re-take one parent clip in place (clip.swap-media)
+  through the durable timeline session; the clip keeps its id;
 - ``replace-parent-media`` — replace one selected clip in the canonical
   parent-composition closure through ``client.timelines.replace_parent_media``;
 - ``archive`` — reversible event-backed ``client.timelines.archive``;
