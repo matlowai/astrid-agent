@@ -124,10 +124,16 @@
         },
         "list": {
           "flags": {
+            "--cursor": {
+              "required": false
+            },
             "--json": {
               "required": false
             },
             "--kind": {
+              "required": false
+            },
+            "--limit": {
               "required": false
             },
             "--model": {

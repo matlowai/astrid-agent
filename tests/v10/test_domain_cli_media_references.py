@@ -613,6 +613,19 @@ def test_media_list_forwards_all_exact_filters(capsys) -> None:
     ]
 
 
+def test_media_list_pages_with_cursor_and_says_when_more_follow(capsys) -> None:
+    client = _FakeClient()
+    client.media.list = lambda project, **page: (
+        client.calls.append(("media.list", {"project": project, **page}))
+        or DomainResult.success([[{"object_id": "sha256:51", "project_id": "P-1"}], "C-2"])
+    )
+    rc = _run("media", ["list", "--project", "demo", "--cursor", "C-1", "--limit", "1"], client=client)
+    assert rc == 0
+    assert client.calls == [("media.list", {"project": "demo", "cursor": "C-1", "limit": 1})]
+    out = capsys.readouterr().out
+    assert "sha256:51" in out and "next cursor: C-2" in out
+
+
 def test_media_show_is_one_sdk_call(capsys) -> None:
     client = _FakeClient()
     rc = _run("media", ["show", "--project", "demo", "M-1", "--json"], client=client)
