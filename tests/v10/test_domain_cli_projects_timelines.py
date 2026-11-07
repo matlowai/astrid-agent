@@ -804,7 +804,8 @@ def test_a_completed_render_prints_its_video_handle(capsys) -> None:
         result = original(capability_id, **kwargs)
         return dataclasses.replace(result, outputs={
             **dict(result.outputs or {}),
-            "managed_outputs": [{"output_port": "video", "ordinal": 0, "filename": "film.mp4"}]})
+            "managed_outputs": [{"output_port": "video", "ordinal": 0, "filename": "film.mp4",
+                                 "object_id": "sha256:" + "a" * 64, "size": 26_000_000}]})
 
     client.invoke_result = with_video
     rc = _run("timelines", ["render", "--project", "demo", "main"], client=client)
@@ -812,7 +813,11 @@ def test_a_completed_render_prints_its_video_handle(capsys) -> None:
     assert rc == 0
     data = json.loads(capsys.readouterr().out)["data"]
     assert data["video"] == "run:R-1/video#0"
-    assert data["export"] == "media open run:R-1/video#0 --project demo --to FILE.mp4"
+    assert data["export"] == ("media open sha256:" + "a" * 64 + " --project demo --materialize --cache-root DIR"
+                              " --max-bytes 26000000")
+    # The hint must parse as the real media open verb.
+    from astrid.core.cli.domain_media import build_parser
+    build_parser(client=client).parse_args(data["export"].replace("DIR", "/tmp/out").split()[1:])
 
 
 def test_timelines_render_detach_is_explicit_and_truthfully_labeled(capsys) -> None:

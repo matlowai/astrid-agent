@@ -2340,13 +2340,23 @@ def _cmd_commit(parsed: argparse.Namespace) -> int:
 
 
 def _render_video_handle(result: Any, project: Any) -> dict[str, str]:
-    """The film's handle and its export command (users guessed run:R/output#0; the port is video)."""
+    """The film's handle and its export command (users guessed run:R/output#0; the port is video).
+
+    ``media open`` takes the output's object id, not the run handle, and refuses a file over its
+    default byte cap, so the command names the cap when the film is larger."""
+    from astrid.sdk.media_open import DEFAULT_MAX_BYTES
+
     run_id = getattr(result, "kernel_run_id", None) or getattr(result, "run_id", None)
     outputs = getattr(result, "outputs", None)
     for row in (outputs.get("managed_outputs") or []) if isinstance(outputs, Mapping) else []:
         if isinstance(row, Mapping) and str(row.get("output_port")) == "video" and run_id:
             handle = f"run:{run_id}/video#{row.get('ordinal') or 0}"
-            return {"video": handle, "export": f"media open {handle} --project {project} --to FILE.mp4"}
+            if not row.get("object_id"):
+                return {"video": handle}
+            export = f"media open {row['object_id']} --project {project} --materialize --cache-root DIR"
+            if isinstance(row.get("size"), int) and row["size"] > DEFAULT_MAX_BYTES:
+                export += f" --max-bytes {row['size']}"
+            return {"video": handle, "export": export}
     return {}
 
 
