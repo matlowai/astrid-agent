@@ -1,0 +1,11 @@
+{
+ "id": "Q-L16",
+ "note": "Lab logs copied whole; local paths replaced by <lab>, <study>, <fork-work>.",
+ "sources": [
+  {
+   "source": "<fork-work>/logs/fbg-04-dry.json",
+   "bytes": 186,
+   "content": "{\"data\":null,\"error\":{\"code\":\"timeline_edit_error\",\"details\":{},\"message\":\"clip.delete cannot prove declared semantic dependencies safe\"},\"idempotency_key\":\"\",\"ok\":false,\"receipt\":null}\n"
+  }
+ ]
+}
