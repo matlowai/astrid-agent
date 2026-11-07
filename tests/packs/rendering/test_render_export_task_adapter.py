@@ -918,8 +918,10 @@ def test_launch_validation_missing_reference_does_not_spawn(tmp_path, monkeypatc
     def unexpected(*args, **kwargs):
         pytest.fail('ordinary readiness verification spawned a probe')
     monkeypatch.setattr(remotion_runtime, '_owned_probe', unexpected)
-    with pytest.raises(remotion_runtime.RemotionValidationError, match='explicit owned validation'):
+    with pytest.raises(remotion_runtime.RemotionValidationError, match='explicit owned validation') as refused:
         remotion_runtime._validated_runtime(tmp_path, environment={'HOME': str(tmp_path)})
+    # The refusal names its cause: here the launch reference variable that is absent.
+    assert f"KeyError: '{remotion_runtime.ASTRID_REMOTION_VALIDATION_PATH}'" in str(refused.value)
 
 
 def test_owned_probe_positive_original_wait_precedes_final_census(monkeypatch, tmp_path):
