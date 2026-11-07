@@ -276,7 +276,16 @@ def test_shots_and_timeline_file_arguments_take_text(tmp_path):
     assert Path(sheet_file).is_absolute()
 
 
+def _select_for_claude(monkeypatch, *pack_ids):
+    """Select packs for the claude harness, as `astrid skills sync` would; the real invoke gate then runs."""
+    import astrid.skills
+
+    monkeypatch.setattr(astrid.skills, "_sync_descriptors_for_harness",
+                        lambda mains, *_args, **_kwargs: [d for d in mains if d.pack_id in {"_core", *pack_ids}])
+
+
 def test_invoke_returns_admission_and_task_refs(monkeypatch):
+    _select_for_claude(monkeypatch, "vibecomfy")
     calls = []
 
     def fake_run(argv, cwd):
@@ -303,6 +312,7 @@ def test_invoke_text_is_the_whole_result(monkeypatch):
         reply = {"content": [{"text": json.dumps(payload)}], "details": {"astridTaskRefs": []}}
         return subprocess.CompletedProcess(argv, 0, stdout=json.dumps(reply), stderr="")
 
+    _select_for_claude(monkeypatch, "vibecomfy")
     monkeypatch.setattr(mcp_server, "_run", fake_run)
     result = mcp_server.call_tool(mcp_server._extra_tools()["invoke"],
                                   {"capability_id": "vibecomfy.run", "project": "demo", "inputs": {}})
@@ -311,14 +321,20 @@ def test_invoke_text_is_the_whole_result(monkeypatch):
 
 
 def test_long_skill_descriptions_are_served_whole(monkeypatch, tmp_path):
-    import astrid
+    import dataclasses
+
+    from astrid.skills import discovery
 
     description = "Use this when " + "a long case, " * 120 + "and never for X."
-    skill = tmp_path / "packs" / "demo" / "SKILL.md"
+    skill = tmp_path / "vibecomfy" / "SKILL.md"
     skill.parent.mkdir(parents=True)
     skill.write_text(f'---\nname: demo\ndescription: "{description}"\n---\nBody\n', encoding="utf-8")
-    monkeypatch.setattr(astrid, "__file__", str(tmp_path / "__init__.py"))
-    assert mcp_server.build_prompts()["demo"]["definition"]["description"] == description
+    real = discovery.list_skills
+    monkeypatch.setattr(discovery, "list_skills", lambda *a, **k: [
+        dataclasses.replace(d, skill_md=skill, skill_dir=skill.parent) if d.pack_id == "vibecomfy" else d
+        for d in real(*a, **k)])
+    prompts = mcp_server.build_prompts(selected_pack_ids={"vibecomfy"})
+    assert prompts["demo"]["definition"]["description"] == description
 
 
 def test_comfy_scan_runs_with_requested_ports(monkeypatch):
