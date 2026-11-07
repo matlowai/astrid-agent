@@ -17,7 +17,8 @@ Verbs (exactly these five, one SDK call each):
   child key); video/audio containers are strictly probed with ``ffprobe``
   before any media/event/receipt write, and an undecodable container is a
   typed validation failure; any other path is a usage error before any SDK call;
-- ``list`` — ``client.media.list`` (project-scoped, created_at then id);
+- ``list`` — ``client.media.list`` (project-scoped, created_at then id; one page,
+  ``--cursor`` continues);
 - ``show <ref>`` — ``client.media.show`` by exact project-scoped media id
   (aliases resolve through the repository; cross-project ids are
   indistinguishable from missing);
@@ -168,6 +169,8 @@ def _cmd_list(parsed: argparse.Namespace) -> int:
                 ("model", parsed.model),
                 ("target", parsed.target),
                 ("tag", parsed.tag),
+                ("cursor", parsed.cursor),
+                ("limit", parsed.limit),
             )
             if value is not None
         },
@@ -284,6 +287,8 @@ def _configure_list(subparser: argparse.ArgumentParser) -> None:
     subparser.add_argument("--model", default=None, help="Exact generation model filter.")
     subparser.add_argument("--target", default=None, help="Exact generation target filter.")
     subparser.add_argument("--tag", default=None, help="Exact generation tag filter.")
+    subparser.add_argument("--cursor", default=None, help="Continue from the cursor a previous page returned.")
+    subparser.add_argument("--limit", type=int, default=None, help="Rows per page (default: 50).")
     _add_json_flag(subparser)
     subparser.set_defaults(handler=_cmd_list)
 

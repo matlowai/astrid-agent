@@ -91,19 +91,21 @@ def _identity_summary(data: object) -> str:
         return "ok"
     if isinstance(data, list):
         # Cursor-paged list results use ``[rows, cursor]``. Keep every row
-        # visible; callers already bound human task/run lists at the parser.
-        rows = data[0] if len(data) == 2 and isinstance(data[0], list) else data
+        # visible, and say when another page follows.
+        paged = len(data) == 2 and isinstance(data[0], list)
+        rows = data[0] if paged else data
+        more = [f"more rows follow; next cursor: {data[1]}"] if paged and data[1] else []
         if not rows:
-            return "0 results"
+            return "\n".join(["0 results", *more])
         if all(isinstance(row, Mapping) for row in rows):
             lines = [f"{len(rows)} result(s)"]
             fields = ("id", "task_id", "run_id", "capability", "capability_id", "status", "state", "created_at", "started_at", "title", "name")
             for row in rows:
-                label = next((str(row[key]) for key in ("task_id", "run_id", "id", "timeline_id") if row.get(key)), "")
+                label = next((str(row[key]) for key in ("task_id", "run_id", "id", "object_id", "timeline_id") if row.get(key)), "")
                 details = [f"{key}={row[key]}" for key in fields if key in row and row[key] not in (None, "") and key not in {"id", "task_id", "run_id"}]
                 lines.append("  " + "  ".join(part for part in (label, *details) if part))
-            return "\n".join(lines)
-        return f"{len(rows)} result(s)"
+            return "\n".join([*lines, *more])
+        return "\n".join([f"{len(rows)} result(s)", *more])
     if isinstance(data, dict):
         identity = None
         for key in (
